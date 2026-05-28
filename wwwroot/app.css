@@ -1318,3 +1318,331 @@ html, body {
     .game-area { width: 96vw; }
     .quick-slot { width: 64px; }
 }
+
+
+/* =========================================================
+   Proper Character Customizing Upgrade
+   - 기존 동그라미 색칠 캐릭터 대신 픽셀 RPG 아바타 느낌으로 교체
+   - 프리셋 / 의상 타입 / 장식 / 헤어를 조합해서 사용
+   ========================================================= */
+.custom-avatar {
+    position: relative;
+    width: 46px;
+    height: 58px;
+    margin: 0 auto;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 5px 4px rgba(0,0,0,.55));
+}
+
+.custom-avatar.big-avatar {
+    width: 92px;
+    height: 116px;
+    transform: scale(1.25);
+    margin: 22px auto 34px;
+}
+
+.custom-avatar.hud-avatar {
+    width: 42px;
+    height: 52px;
+    transform: scale(.8);
+    margin-top: -4px;
+}
+
+.avatar-head {
+    position: absolute;
+    left: 50%;
+    top: 4px;
+    width: 26px;
+    height: 28px;
+    transform: translateX(-50%);
+    background: var(--skin);
+    border: 3px solid #1f130b;
+    border-radius: 8px 8px 9px 9px;
+    z-index: 5;
+    box-shadow: inset -4px -4px 0 rgba(0,0,0,.15), inset 3px 2px 0 rgba(255,255,255,.22);
+}
+
+.custom-avatar.big-avatar .avatar-head {
+    width: 52px;
+    height: 56px;
+    border-width: 5px;
+    border-radius: 14px 14px 16px 16px;
+}
+
+.avatar-face {
+    position: absolute;
+    left: 50%;
+    top: 54%;
+    transform: translate(-50%, -50%) scale(.58);
+    font-size: 19px;
+    line-height: 1;
+    filter: saturate(.9) contrast(1.05);
+}
+
+.custom-avatar.big-avatar .avatar-face {
+    font-size: 36px;
+}
+
+.avatar-hair {
+    position: absolute;
+    left: -4px;
+    top: -8px;
+    width: 28px;
+    height: 17px;
+    background: var(--hair);
+    border: 3px solid #1f130b;
+    border-bottom: none;
+    border-radius: 12px 12px 5px 5px;
+    z-index: 8;
+    box-shadow: inset -4px -2px 0 rgba(0,0,0,.25);
+}
+
+.custom-avatar.big-avatar .avatar-hair {
+    left: -8px;
+    top: -15px;
+    width: 56px;
+    height: 34px;
+    border-width: 5px;
+    border-radius: 22px 22px 9px 9px;
+}
+
+.avatar-hair.hair-long {
+    height: 33px;
+    border-radius: 13px 13px 11px 11px;
+}
+.avatar-hair.hair-spiky {
+    clip-path: polygon(0 80%, 8% 28%, 20% 75%, 34% 0, 48% 75%, 63% 12%, 78% 78%, 100% 30%, 100% 100%, 0 100%);
+    height: 24px;
+}
+.avatar-hair.hair-bob {
+    height: 25px;
+    border-radius: 12px 12px 14px 14px;
+}
+.avatar-hair.hair-ponytail::after {
+    content: "";
+    position: absolute;
+    right: -12px;
+    top: 5px;
+    width: 13px;
+    height: 24px;
+    background: var(--hair);
+    border: 3px solid #1f130b;
+    border-radius: 999px;
+}
+.avatar-hair.hair-hood {
+    background: var(--outfit);
+    height: 31px;
+    width: 33px;
+    left: -7px;
+    top: -10px;
+    border-radius: 16px 16px 9px 9px;
+}
+
+.avatar-body {
+    position: absolute;
+    left: 50%;
+    top: 30px;
+    width: 34px;
+    height: 28px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--outfit) 86%, white 14%), color-mix(in srgb, var(--outfit) 72%, black 28%));
+    border: 3px solid #1f130b;
+    border-radius: 9px 9px 6px 6px;
+    z-index: 3;
+    box-shadow: inset -5px -3px 0 rgba(0,0,0,.2), inset 4px 2px 0 rgba(255,255,255,.16);
+}
+.custom-avatar.big-avatar .avatar-body {
+    top: 60px;
+    width: 68px;
+    height: 56px;
+    border-width: 5px;
+    border-radius: 16px 16px 10px 10px;
+}
+
+.avatar-body::before,
+.avatar-body::after {
+    content: "";
+    position: absolute;
+    top: 6px;
+    width: 9px;
+    height: 24px;
+    background: var(--skin);
+    border: 3px solid #1f130b;
+    border-radius: 999px;
+    z-index: -1;
+}
+.avatar-body::before { left: -12px; transform: rotate(8deg); }
+.avatar-body::after { right: -12px; transform: rotate(-8deg); }
+
+.armor-mark {
+    position: absolute;
+    left: 50%;
+    top: 7px;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 2px solid rgba(255,255,255,.45);
+    background: rgba(0,0,0,.16);
+}
+
+.outfit-armor .avatar-body {
+    background: linear-gradient(180deg, #cbd5e1, var(--outfit));
+    border-color: #111827;
+}
+.outfit-armor .armor-mark {
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #facc15, #94a3b8);
+    border-color: #1f130b;
+    transform: translateX(-50%) rotate(45deg);
+}
+.outfit-robe .avatar-body {
+    height: 33px;
+    border-radius: 14px 14px 4px 4px;
+    background: linear-gradient(180deg, var(--outfit), #111827);
+}
+.outfit-leather .avatar-body {
+    background: linear-gradient(180deg, #78350f, var(--outfit));
+}
+.outfit-ranger .avatar-body {
+    background: linear-gradient(180deg, #166534, var(--outfit));
+}
+
+.custom-avatar.accessory-cape::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 28px;
+    width: 44px;
+    height: 36px;
+    transform: translateX(-50%);
+    background: color-mix(in srgb, var(--outfit) 70%, #111827 30%);
+    border: 3px solid #1f130b;
+    border-radius: 14px 14px 8px 8px;
+    z-index: 1;
+    opacity: .95;
+}
+.custom-avatar.accessory-pauldron .avatar-body {
+    box-shadow: -13px -3px 0 -4px #cbd5e1, 13px -3px 0 -4px #cbd5e1, inset -5px -3px 0 rgba(0,0,0,.2), inset 4px 2px 0 rgba(255,255,255,.16);
+}
+.custom-avatar.accessory-scarf .avatar-head::after {
+    content: "";
+    position: absolute;
+    left: 2px;
+    bottom: -10px;
+    width: 23px;
+    height: 8px;
+    background: #dc2626;
+    border: 2px solid #1f130b;
+    border-radius: 999px;
+    z-index: 10;
+}
+.custom-avatar.accessory-hood .avatar-hair {
+    background: var(--outfit);
+    height: 31px;
+    width: 33px;
+    left: -7px;
+    top: -10px;
+    border-radius: 16px 16px 9px 9px;
+}
+
+.premium-customize-window {
+    width: 620px;
+    right: 18px;
+    top: 94px;
+}
+
+.customize-grid-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 14px;
+    max-height: 560px;
+}
+
+.premium-preview {
+    grid-row: span 7;
+    min-height: 360px;
+    border: 1px solid rgba(245, 158, 11, .35);
+    background:
+        radial-gradient(circle at center 32%, rgba(250,204,21,.18), transparent 34%),
+        linear-gradient(180deg, rgba(30,41,59,.95), rgba(2,6,23,.95));
+    border-radius: 18px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.preview-stage {
+    min-height: 180px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, rgba(15,23,42,.4), rgba(0,0,0,.28));
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+}
+.preview-stage::before {
+    content: "";
+    position: absolute;
+    inset: auto 18px 18px;
+    height: 16px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,.55), transparent 70%);
+}
+
+.preview-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    color: #f8fafc;
+}
+.preview-info strong { color: #facc15; font-size: 18px; }
+.preview-info span { color: #cbd5e1; }
+.preview-info small { color: #94a3b8; line-height: 1.35; }
+
+.custom-section.full-row,
+.full-row {
+    grid-column: 2;
+}
+
+.preset-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+.preset-grid button,
+.compact-choice button {
+    border: 1px solid rgba(245, 158, 11, .35);
+    background: linear-gradient(180deg, rgba(51,65,85,.95), rgba(15,23,42,.95));
+    color: #f8fafc;
+    border-radius: 10px;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+.preset-grid button:hover,
+.compact-choice button:hover,
+.compact-choice button.active {
+    border-color: #facc15;
+    box-shadow: 0 0 12px rgba(250,204,21,.25);
+    color: #facc15;
+}
+
+.compact-choice {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.compact-choice button {
+    width: auto;
+    min-width: 76px;
+    padding: 7px 9px;
+}
+
+@media (max-width: 1100px) {
+    .premium-customize-window { width: 92vw; right: 4vw; }
+    .customize-grid-layout { grid-template-columns: 1fr; }
+    .premium-preview { grid-row: auto; min-height: 260px; }
+    .custom-section.full-row, .full-row { grid-column: auto; }
+}
