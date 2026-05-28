@@ -28,7 +28,6 @@ window.gameInput = {
                 "k", "K",
                 "s", "S",
                 "e", "E",
-                "j", "J",
                 "z", "Z",
                 "ArrowUp",
                 "ArrowDown",

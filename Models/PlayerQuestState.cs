@@ -1,6 +1,6 @@
 namespace MyBlazorApp.Models;
 
-// 플레이어가 받은 퀘스트 진행 상태
+// 플레이어 퀘스트 진행 상태
 public class PlayerQuestState
 {
     public string QuestId { get; set; } = "";

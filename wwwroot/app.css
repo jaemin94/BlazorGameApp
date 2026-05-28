@@ -1,50 +1,24 @@
-/* ===============================
-   기본 Blazor 스타일
-================================ */
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background: #0f172a;
     color: #e5e7eb;
 }
 
-a, .btn-link {
-    color: #006bb7;
-}
-
-.btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-}
-
-.content {
-    padding-top: 1.1rem;
-}
+button { cursor: pointer; }
 
 .join-box {
     display: flex;
     gap: 8px;
-    margin-top: 16px;
+    padding: 16px;
 }
 
-.join-box input {
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid #475569;
-}
-
+.join-box input,
 .join-box button {
-    padding: 8px 16px;
-    border: none;
+    padding: 8px 12px;
     border-radius: 8px;
-    background: #22c55e;
-    color: white;
-    cursor: pointer;
+    border: 1px solid #334155;
 }
 
-/* ===============================
-   게임 영역
-================================ */
 .game-area {
     position: relative;
     width: 1000px;
@@ -57,9 +31,6 @@ a, .btn-link {
     margin-top: 20px;
 }
 
-/* ===============================
-   타일 맵
-================================ */
 .tile-map {
     position: absolute;
     inset: 0;
@@ -69,173 +40,20 @@ a, .btn-link {
     z-index: 0;
 }
 
-.tile {
-    width: 50px;
-    height: 50px;
-    box-sizing: border-box;
-}
-
-.wall {
-    background: #334155;
-    border: 1px solid rgba(255,255,255,0.08);
-}
-
+.tile { width: 50px; height: 50px; box-sizing: border-box; }
+.grass { background: #2f7d32; }
 .town-grass {
     background: #4ade80;
-    background-image:
-        radial-gradient(circle at 12px 14px, rgba(255,255,255,0.18) 2px, transparent 3px),
-        radial-gradient(circle at 35px 32px, rgba(22,101,52,0.25) 2px, transparent 4px);
+    background-image: radial-gradient(circle at 12px 14px, rgba(255,255,255,0.18) 2px, transparent 3px), radial-gradient(circle at 35px 32px, rgba(22,101,52,0.25) 2px, transparent 4px);
 }
-
-.town-road {
-    background: #d6b37f;
-    border: 1px solid rgba(120, 80, 40, 0.18);
-}
-
-.house {
-    background: #92400e;
-    border: 2px solid #451a03;
-    box-shadow: inset 0 0 0 6px rgba(251,191,36,0.25);
-}
-
-.tree {
-    background: #166534;
-    border-radius: 50%;
-    border: 4px solid #14532d;
-    box-shadow: inset 0 -8px 0 rgba(0,0,0,0.18);
-}
-
-.field-grass {
-    background: #2f7d32;
-    background-image:
-        linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%),
-        linear-gradient(-45deg, rgba(0,0,0,0.08) 25%, transparent 25%);
-    background-size: 16px 16px;
-}
-
-.dirt-road {
-    background: #8d6e63;
-    background-image:
-        radial-gradient(circle, rgba(255,255,255,0.15) 2px, transparent 3px);
-    background-size: 18px 18px;
-}
-
-.water {
-    background: #1e88e5;
-    background-image:
-        linear-gradient(90deg, rgba(255,255,255,0.25) 20%, transparent 20%, transparent 80%, rgba(255,255,255,0.18) 80%);
-    background-size: 24px 24px;
-    animation: waterMove 1.4s linear infinite;
-}
-
-@keyframes waterMove {
-    from { background-position: 0 0; }
-    to { background-position: 24px 0; }
-}
-
-.rock {
-    background: #64748b;
-    border-radius: 35%;
-    border: 3px solid #334155;
-}
-
-.boss-wall {
-    background: #111827;
-    border: 1px solid #374151;
-}
-
-.boss-floor {
-    background: #3f1d1d;
-    background-image:
-        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
-        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-    background-size: 25px 25px;
-    border: 1px solid rgba(248,113,113,0.15);
-}
-
-.torch {
-    background: #7f1d1d;
-    box-shadow: inset 0 0 18px #f97316, 0 0 18px rgba(249,115,22,0.6);
-}
-
-/* ===============================
-   캐릭터 / 몬스터 / NPC
-================================ */
-.player, .monster, .npc {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    text-align: center;
-}
-
-.player {
-    z-index: 5;
-    font-size: 32px;
-}
-
-.monster {
-    z-index: 4;
-    font-size: 34px;
-}
-
-.npc {
-    z-index: 8;
-    font-size: 34px;
-}
-
-.player-img, .monster-img {
-    width: 48px;
-    height: 48px;
-    image-rendering: pixelated;
-}
-
-.npc-img {
-    width: 42px;
-    height: 42px;
-    image-rendering: pixelated;
-}
-
-.name, .monster-name {
-    font-size: 12px;
-    color: white;
-    background: rgba(0,0,0,0.55);
-    padding: 2px 6px;
-    border-radius: 8px;
-    margin-bottom: 2px;
-}
-
-.monster-name {
-    font-size: 11px;
-    margin-top: 2px;
-}
-
-.monster-hp {
-    font-size: 11px;
-    color: white;
-    background: rgba(180,0,0,0.7);
-    padding: 2px 6px;
-    border-radius: 8px;
-    margin-top: 2px;
-}
-
-/* ===============================
-   상태창 / 맵 이름
-================================ */
-.status-box {
-    position: absolute;
-    left: 12px;
-    top: 12px;
-    color: white;
-    background: rgba(0,0,0,0.55);
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-size: 14px;
-    z-index: 20;
-}
+.town-road { background: #d6b37f; border: 1px solid rgba(120,80,40,0.18); }
+.boss-floor { background: #3f1d1d; border: 1px solid rgba(255,255,255,0.05); }
+.water { background: #1e88e5; }
+.wall { background: #334155; border: 1px solid rgba(255,255,255,0.08); }
 
 .map-name {
     position: absolute;
-    left: 50%;
-    top: 14px;
+    left: 50%; top: 14px;
     transform: translateX(-50%);
     background: rgba(0,0,0,0.65);
     color: white;
@@ -245,13 +63,76 @@ a, .btn-link {
     font-size: 14px;
 }
 
-/* ===============================
-   포탈
-================================ */
+.status-box {
+    position: absolute;
+    left: 12px; top: 12px;
+    color: white;
+    background: rgba(0, 0, 0, 0.62);
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 200;
+    line-height: 1.5;
+}
+
+.player, .monster {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.player { z-index: 20; }
+.monster { z-index: 18; }
+
+.name, .monster-name {
+    font-size: 12px;
+    color: white;
+    background: rgba(0,0,0,0.65);
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-bottom: 2px;
+}
+
+.player-img, .monster-img {
+    width: 48px;
+    height: 48px;
+    image-rendering: pixelated;
+}
+
+.monster-hp {
+    font-size: 11px;
+    color: white;
+    background: rgba(180,0,0,0.75);
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-top: 2px;
+}
+
+.building {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    background: linear-gradient(#854d0e, #451a03);
+    border: 3px solid #292524;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 6px rgba(251,191,36,0.22), 0 10px 20px rgba(0,0,0,0.25);
+    text-align: center;
+    color: white;
+}
+
+.building-icon { font-size: 34px; margin-top: 12px; }
+.building-name {
+    margin: 4px auto 0;
+    display: inline-block;
+    background: rgba(0,0,0,0.55);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+}
+
 .portal {
     position: absolute;
     transform: translate(-50%, -50%);
-    z-index: 13;
+    z-index: 15;
     color: white;
     text-align: center;
     font-size: 28px;
@@ -261,281 +142,215 @@ a, .btn-link {
     border-radius: 14px;
     box-shadow: 0 0 14px rgba(192,132,252,0.8);
 }
+.portal div { font-size: 11px; margin-top: 2px; white-space: nowrap; }
 
-.portal div {
-    font-size: 11px;
-    margin-top: 2px;
-    white-space: nowrap;
-}
-
-.portal-confirm {
+.rpg-window,
+.modal-window {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 300px;
-    background: rgba(15,23,42,0.97);
+    background: rgba(15, 23, 42, 0.97);
     color: white;
-    padding: 20px;
+    padding: 16px;
     border-radius: 16px;
-    border: 2px solid rgba(216,180,254,0.8);
-    z-index: 200;
-    text-align: center;
-    box-shadow: 0 0 20px rgba(0,0,0,0.6);
+    border: 2px solid rgba(255,255,255,0.18);
+    box-shadow: 0 16px 35px rgba(0,0,0,0.45);
+    z-index: 300;
 }
 
-.portal-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 16px;
+.modal-window {
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
 }
 
-.portal-buttons button {
-    flex: 1;
-    border: none;
-    border-radius: 10px;
-    padding: 8px 12px;
-    cursor: pointer;
-    color: white;
-}
+.small-window { width: 320px; }
+.building-inner-window { width: 430px; max-height: 560px; }
+.inventory-window { right: 20px; top: 20px; width: 390px; max-height: 600px; }
+.skill-window { left: 20px; bottom: 20px; width: 390px; max-height: 560px; }
+.character-window { left: 20px; top: 180px; width: 290px; max-height: 430px; }
+.equipment-window { right: 430px; top: 20px; width: 280px; max-height: 430px; }
 
-.portal-buttons button:first-child {
-    background: #22c55e;
-}
-
-.portal-buttons button:last-child {
-    background: #ef4444;
-}
-
-/* ===============================
-   상점 / 퀘스트 / 대화창
-================================ */
-.npc-dialog {
-    position: absolute;
-    left: 50%;
-    bottom: 20px;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.8);
-    color: white;
-    padding: 16px 24px;
-    border-radius: 12px;
-    z-index: 30;
-    min-width: 240px;
-    text-align: center;
-}
-
-.shop-box {
-    position: absolute;
-    right: 20px;
-    bottom: 20px;
-    width: 280px;
-    background: rgba(0,0,0,0.85);
-    color: white;
-    padding: 16px;
-    border-radius: 14px;
-    z-index: 40;
-}
-
-.shop-box h4 {
-    margin-top: 0;
-}
-
-.shop-box button {
-    display: block;
-    width: 100%;
-    margin-top: 8px;
-    padding: 8px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-}
-
-.quest-panel {
-    background: rgba(255,255,255,0.08);
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-}
-
-.quest-complete {
-    color: #22c55e;
-    font-weight: bold;
-}
-
-/* ===============================
-   인벤토리 / 장비 / 캐릭터 / 스킬창
-================================ */
-.inventory-box, .equipment-window, .character-window, .skill-window {
-    position: absolute;
-    width: 280px;
-    background: rgba(15,23,42,0.95);
-    color: white;
-    padding: 16px;
-    border-radius: 14px;
-    border: 2px solid rgba(255,255,255,0.2);
-    z-index: 70;
-}
-
-.inventory-box {
-    right: 20px;
-    top: 20px;
-}
-
-.equipment-window {
-    right: 320px;
-    top: 20px;
-}
-
-.character-window {
-    left: 20px;
-    top: 180px;
-}
-
-.skill-window {
-    left: 20px;
-    bottom: 20px;
-}
-
-.inventory-box h4,
-.equipment-window h4,
-.character-window h4,
-.skill-window h4 {
-    margin-top: 0;
-    margin-bottom: 12px;
-}
-
-.inventory-item,
-.equipment-slot,
-.stat-row,
-.skill-slot-ui,
-.skill-book-item {
+.window-title {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255,255,255,0.08);
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    gap: 8px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
-
-.inventory-item div,
-.equipment-slot {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.inventory-item span,
-.inventory-item small,
-.equipment-slot small,
-.skill-slot-ui small {
-    font-size: 12px;
-    opacity: 0.8;
-}
-
-.inventory-item button,
-.equipment-slot button,
-.stat-row button,
-.skill-assign-buttons button {
+.window-title h4 { margin: 0; }
+.x-button {
     border: none;
     border-radius: 8px;
-    padding: 6px 10px;
-    cursor: pointer;
-    background: #22c55e;
-    color: white;
-    font-size: 12px;
-}
-
-.equipment-slot button {
     background: #ef4444;
-}
-
-.skill-desc, .inventory-help {
-    font-size: 12px;
-    opacity: 0.75;
-}
-
-.skill-assign-buttons {
-    display: flex;
-    gap: 4px;
-}
-
-/* ===============================
-   드랍 / 희귀도
-================================ */
-.drop-item {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    z-index: 12;
-}
-
-.drop-loot, .drop-gold {
-    background: rgba(0,0,0,0.8);
     color: white;
     padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 12px;
-    border: 1px solid rgba(255,255,255,0.2);
 }
 
-.drop-gold {
-    background: rgba(180,140,0,0.9);
+.scroll-body {
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 6px;
 }
+.scroll-body::-webkit-scrollbar { width: 8px; }
+.scroll-body::-webkit-scrollbar-thumb { background: #64748b; border-radius: 999px; }
+.scroll-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.08); border-radius: 999px; }
 
-.rarity-normal {
-    border: 1px solid rgba(255,255,255,0.2);
+.npc-card {
+    background: rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
 }
+.npc-card strong { color: #facc15; }
+.npc-card p { margin: 6px 0 0; font-size: 13px; opacity: .9; }
 
-.rarity-rare {
-    color: #38bdf8;
-    border: 1px solid #38bdf8;
-    box-shadow: 0 0 8px rgba(56,189,248,0.45);
-}
-
-.rarity-epic {
-    color: #c084fc;
-    border: 1px solid #c084fc;
-    box-shadow: 0 0 10px rgba(192,132,252,0.7);
-}
-
-/* ===============================
-   퀵슬롯
-================================ */
-.quick-slot-bar {
-    position: absolute;
-    left: 50%;
-    bottom: 14px;
-    transform: translateX(-50%);
+.shop-list, .job-list, .quest-list {
     display: flex;
-    gap: 8px;
-    z-index: 100;
+    flex-direction: column;
+    gap: 10px;
 }
-
-.quick-slot {
-    position: relative;
-    width: 92px;
-    height: 58px;
-    background: rgba(15,23,42,0.9);
+.shop-item,
+.skill-book-item,
+.equipment-slot,
+.stat-row {
+    background: rgba(255,255,255,0.08);
+    padding: 10px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.shop-item button,
+.job-list button,
+.skill-book-item button,
+.equipment-slot button,
+.stat-row button {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: #2563eb;
     color: white;
-    border: 2px solid rgba(255,255,255,0.2);
+}
+.shop-item button:hover,
+.job-list button:hover,
+.skill-book-item button:hover { background: #1d4ed8; }
+.job-list button:disabled { background: #475569; cursor: not-allowed; }
+
+.button-row { display: flex; gap: 10px; }
+.button-row button { flex: 1; border: none; border-radius: 10px; padding: 10px; color: white; background: #22c55e; }
+.button-row .danger { background: #ef4444; }
+
+.inventory-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.inventory-tabs button {
+    border: none;
+    border-radius: 9px;
+    padding: 8px;
+    background: #334155;
+    color: white;
+}
+.inventory-tabs button.active { background: #2563eb; }
+
+.inventory-scroll { max-height: 470px; }
+.bag-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+.bag-slot {
+    position: relative;
+    min-height: 118px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.14);
     border-radius: 12px;
     padding: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.empty-slot {
+    margin: auto;
+    color: #94a3b8;
+    font-size: 12px;
+}
+.item-card {
+    position: relative;
+    min-height: 62px;
+    border-radius: 10px;
+    padding: 5px;
     text-align: center;
+    background: rgba(255,255,255,0.07);
+}
+.item-icon { font-size: 20px; }
+.item-card strong { display: block; font-size: 12px; }
+.item-card span { display: block; font-size: 11px; opacity: .8; }
+.item-actions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+.item-actions button {
+    flex: 1;
+    border: none;
+    border-radius: 7px;
+    padding: 4px 5px;
+    background: #22c55e;
+    color: white;
+    font-size: 11px;
+}
+.item-actions button.sell { background: #f97316; }
+
+.item-tooltip {
+    display: none;
+    position: absolute;
+    left: 72px;
+    top: 5px;
+    width: 180px;
+    text-align: left;
+    background: rgba(2,6,23,0.98);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    z-index: 1000;
+    box-shadow: 0 10px 20px rgba(0,0,0,.4);
+}
+.item-card:hover .item-tooltip { display: block; }
+
+.slot-buttons {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 4px;
+}
+.slot-buttons button { padding: 5px; font-size: 11px; }
+
+.quick-slot-bar {
+    position: absolute;
+    left: 50%; bottom: 12px;
+    transform: translateX(-50%);
+    display: grid;
+    grid-template-columns: repeat(9, 72px);
+    gap: 6px;
+    z-index: 250;
+}
+.quick-slot {
+    position: relative;
+    height: 54px;
+    background: rgba(0,0,0,0.72);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    padding: 5px;
     overflow: hidden;
 }
-
-.quick-slot strong {
-    display: block;
-    color: #facc15;
-}
-
-.quick-slot span {
-    display: block;
-    font-size: 12px;
-    margin-top: 3px;
-}
-
+.quick-slot strong { display: block; color: #facc15; font-size: 12px; }
+.quick-slot span { font-size: 11px; }
 .cooldown-cover {
     position: absolute;
     inset: 0;
@@ -547,9 +362,25 @@ a, .btn-link {
     font-weight: bold;
 }
 
-/* ===============================
-   이펙트
-================================ */
+.drop-item {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 22;
+}
+.drop-loot, .drop-gold {
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+.drop-gold { background: rgba(180,140,0,0.9); }
+
+.rarity-normal { border: 1px solid rgba(255,255,255,0.22); }
+.rarity-rare { border: 1px solid #38bdf8; box-shadow: 0 0 8px rgba(56,189,248,0.45); }
+.rarity-epic { border: 1px solid #c084fc; box-shadow: 0 0 10px rgba(192,132,252,0.7); }
+
 .attack-effect {
     position: absolute;
     width: 24px;
@@ -559,367 +390,17 @@ a, .btn-link {
     transform: translate(-50%, -50%);
     pointer-events: none;
     animation: attackPulse 0.15s ease-out;
-    z-index: 10;
+    z-index: 230;
 }
-
 @keyframes attackPulse {
-    from {
-        width: 10px;
-        height: 10px;
-        opacity: 1;
-    }
-    to {
-        width: 24px;
-        height: 24px;
-        opacity: 0;
-    }
+    from { width: 10px; height: 10px; opacity: 1; }
+    to { width: 44px; height: 44px; opacity: 0; }
 }
-
 .dash-effect {
     filter: drop-shadow(0 0 12px #38bdf8);
     animation: dashBlink 0.15s ease-out;
 }
-
 @keyframes dashBlink {
-    from {
-        transform: translate(-50%, -50%) scale(1.4);
-        opacity: 0.5;
-    }
-    to {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 1;
-    }
-}
-
-.fireball-effect {
-    position: absolute;
-    font-size: 24px;
-    transform: translate(-50%, -50%);
-    animation: fireballBoom 0.25s ease-out;
-    z-index: 15;
-}
-
-@keyframes fireballBoom {
-    from {
-        transform: translate(-50%, -50%) scale(0.5);
-        opacity: 0.5;
-    }
-    to {
-        transform: translate(-50%, -50%) scale(1.5);
-        opacity: 0;
-    }
-}
-
-.spin-effect {
-    position: absolute;
-    width: 110px;
-    height: 110px;
-    transform: translate(-50%, -50%);
-    border: 3px solid rgba(248,250,252,0.8);
-    border-radius: 50%;
-    z-index: 15;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: spinSlash 0.25s ease-out;
-    pointer-events: none;
-}
-
-@keyframes spinSlash {
-    from {
-        transform: translate(-50%, -50%) rotate(0deg) scale(0.5);
-        opacity: 1;
-    }
-    to {
-        transform: translate(-50%, -50%) rotate(360deg) scale(1.2);
-        opacity: 0;
-    }
-}
-/* ===============================
-   전직 / 스킬창 추가 CSS
-   app.css 맨 아래에 붙여넣기
-   =============================== */
-
-.job-change-box {
-    margin-top: 10px;
-    padding: 10px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 10px;
-}
-
-.job-change-box button,
-.skill-book-item button,
-.skill-assign-buttons button {
-    margin: 4px 4px 0 0;
-    border: none;
-    border-radius: 8px;
-    padding: 6px 9px;
-    cursor: pointer;
-    background: #2563eb;
-    color: white;
-    font-size: 12px;
-}
-
-.job-change-box button:hover,
-.skill-book-item button:hover,
-.skill-assign-buttons button:hover {
-    background: #1d4ed8;
-}
-
-.skill-book-item button:disabled {
-    background: #64748b;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-.skill-book-item {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: rgba(255,255,255,0.08);
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.skill-book-item small {
-    opacity: 0.75;
-    font-size: 11px;
-}
-
-.skill-assign-buttons {
-    margin-top: 6px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.quick-slot-bar {
-    position: absolute;
-    left: 50%;
-    bottom: 14px;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 120;
-}
-
-.quick-slot {
-    position: relative;
-    width: 72px;
-    height: 54px;
-    background: rgba(15, 23, 42, 0.92);
-    border: 1px solid rgba(255,255,255,0.25);
-    border-radius: 10px;
-    color: white;
-    text-align: center;
-    padding: 5px;
-    overflow: hidden;
-}
-
-.quick-slot strong {
-    display: block;
-    font-size: 13px;
-    color: #facc15;
-}
-
-.quick-slot span {
-    display: block;
-    font-size: 11px;
-    margin-top: 4px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.cooldown-cover {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.72);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: bold;
-    color: white;
-}
-
-/* ===== Job / Skill System Add CSS ===== */
-.job-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-    margin-top: 8px;
-}
-
-.job-buttons button,
-.skill-book-item button,
-.skill-assign-buttons button {
-    border: none;
-    border-radius: 8px;
-    padding: 6px 8px;
-    cursor: pointer;
-    background: #2563eb;
-    color: white;
-    font-size: 12px;
-}
-
-.job-buttons button:disabled,
-.skill-book-item button:disabled {
-    background: #475569;
-    color: #94a3b8;
-    cursor: not-allowed;
-}
-
-.job-complete,
-.skill-learned {
-    display: inline-block;
-    margin-top: 6px;
-    padding: 4px 8px;
-    border-radius: 999px;
-    background: rgba(34, 197, 94, 0.2);
-    color: #86efac;
-    font-size: 12px;
-}
-
-.skill-book-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    background: rgba(255,255,255,0.08);
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-}
-
-.skill-book-item small {
-    opacity: 0.78;
-    font-size: 11px;
-}
-
-.skill-assign-buttons {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    margin-top: 6px;
-}
-/* ============================== */
-/* 전직창 */
-/* ============================== */
-.job-window {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 330px;
-    background: rgba(15, 23, 42, 0.97);
-    color: white;
-    padding: 20px;
-    border-radius: 16px;
-    border: 2px solid rgba(96, 165, 250, 0.8);
-    z-index: 300;
-    box-shadow: 0 0 24px rgba(0,0,0,0.65);
-}
-
-.job-window h4 {
-    margin-top: 0;
-    margin-bottom: 12px;
-}
-
-.job-window button {
-    display: block;
-    width: 100%;
-    margin-top: 10px;
-    border: none;
-    border-radius: 10px;
-    padding: 10px;
-    background: #2563eb;
-    color: white;
-    cursor: pointer;
-}
-
-.job-window button:hover {
-    background: #1d4ed8;
-}
-
-/* ============================== */
-/* 스킬창 보강 */
-/* ============================== */
-.skill-book-item {
-    background: rgba(255,255,255,0.08);
-    padding: 10px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.skill-book-item small {
-    opacity: 0.75;
-    font-size: 11px;
-}
-
-.skill-book-item button {
-    border: none;
-    border-radius: 8px;
-    padding: 7px 10px;
-    background: #22c55e;
-    color: white;
-    cursor: pointer;
-    margin-top: 4px;
-}
-
-.skill-book-item button:disabled {
-    background: #64748b;
-    cursor: not-allowed;
-}
-
-.skill-assign-buttons {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-top: 8px;
-}
-
-.quick-slot-bar {
-    position: absolute;
-    left: 50%;
-    bottom: 10px;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 100;
-}
-
-.quick-slot {
-    position: relative;
-    width: 72px;
-    height: 56px;
-    background: rgba(15, 23, 42, 0.88);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 11px;
-    overflow: hidden;
-}
-
-.cooldown-cover {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.72);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    font-weight: bold;
-}
-
-.dungeon-floor {
-    background: #312e81;
-    border: 1px solid rgba(255,255,255,0.08);
+    from { transform: translate(-50%, -50%) scale(1.4); opacity: .5; }
+    to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }

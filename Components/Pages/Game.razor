@@ -25,9 +25,6 @@
 else
 {
     <div class="game-area">
-        <!-- ============================== -->
-        <!-- 타일 맵 -->
-        <!-- ============================== -->
         <div class="tile-map">
             @for (int y = 0; y < 13; y++)
             {
@@ -38,11 +35,16 @@ else
             }
         </div>
 
-        <div class="map-name">현재 맵: @GetMapName(myCurrentMap)</div>
+        <div class="map-name">@GetMapName(myCurrentMap)</div>
 
-        <!-- ============================== -->
-        <!-- 포탈 -->
-        <!-- ============================== -->
+        @foreach (var building in buildings.Where(b => myCurrentMap == MapType.Town))
+        {
+            <div class="building" style="left:@($"{building.X}px"); top:@($"{building.Y}px"); width:@($"{building.Width}px"); height:@($"{building.Height}px");">
+                <div class="building-icon">@building.Icon</div>
+                <div class="building-name">@building.Name</div>
+            </div>
+        }
+
         @foreach (var portal in portals.Where(p => p.FromMap == myCurrentMap))
         {
             <div class="portal" style="left:@($"{portal.X}px"); top:@($"{portal.Y}px");">
@@ -53,96 +55,65 @@ else
 
         @if (showPortalConfirm && selectedPortal != null)
         {
-            <div class="portal-confirm">
+            <div class="modal-window small-window">
                 <h4>포탈 이동</h4>
                 <p>@selectedPortal.Message</p>
-                <div class="portal-buttons">
+                <div class="button-row">
                     <button @onclick="ConfirmPortalMove">예</button>
-                    <button @onclick="CancelPortalMove">아니오</button>
+                    <button class="danger" @onclick="CancelPortalMove">아니오</button>
                 </div>
             </div>
         }
 
-        <!-- ============================== -->
-        <!-- NPC / 상점 / 퀘스트 -->
-        <!-- ============================== -->
-        @foreach (var npc in npcs.Where(n => myCurrentMap == MapType.Town))
+        @if (currentBuilding != null)
         {
-            <div class="npc" style="left:@($"{npc.X}px"); top:@($"{npc.Y}px");">
-                <div class="name">@npc.Name</div>
-                <img src="/images/npc/shopkeeper.png" class="npc-img" />
+            <div class="modal-window building-inner-window">
+                <div class="window-title">
+                    <h4>@currentBuilding.Name 내부</h4>
+                    <button class="x-button" @onclick="CloseBuilding">X</button>
+                </div>
+
+                <div class="scroll-body">
+                    @if (currentBuilding.Type == BuildingType.PotionShop)
+                    {
+                        <div class="npc-card"><strong>물약상인</strong><p>체력이 부족하면 포션을 챙겨가세요.</p></div>
+                        @RenderShop(BuildingType.PotionShop)
+                    }
+                    else if (currentBuilding.Type == BuildingType.WeaponShop)
+                    {
+                        <div class="npc-card"><strong>무기상인</strong><p>좋은 무기는 사냥 속도를 바꿔줍니다.</p></div>
+                        @RenderShop(BuildingType.WeaponShop)
+                    }
+                    else if (currentBuilding.Type == BuildingType.ArmorShop)
+                    {
+                        <div class="npc-card"><strong>방어구상인</strong><p>강한 몬스터를 상대하려면 방어구가 필요합니다.</p></div>
+                        @RenderShop(BuildingType.ArmorShop)
+                    }
+                    else if (currentBuilding.Type == BuildingType.JobHall)
+                    {
+                        <div class="npc-card"><strong>전직관리관</strong><p>조건을 만족하면 전직할 수 있습니다.</p></div>
+                        @RenderJobNpc()
+                    }
+                    else if (currentBuilding.Type == BuildingType.QuestHall)
+                    {
+                        <div class="npc-card"><strong>의뢰관리인</strong><p>마을의 의뢰를 확인하세요.</p></div>
+                        @RenderQuestNpc()
+                    }
+                </div>
             </div>
         }
 
-        @if (showNpcDialog)
-        {
-            <div class="npc-dialog">@npcMessage</div>
-        }
-
-        @if (showShop && selectedNpc != null)
-        {
-            <div class="shop-box quest-box">
-                <h4>@selectedNpc.Name</h4>
-                <p>@selectedNpc.Message</p>
-
-                @{
-                    var quest = questDefinitions.FirstOrDefault(q => q.QuestId == selectedNpc.QuestId);
-                    var myQuest = myQuests.FirstOrDefault(q => q.QuestId == selectedNpc.QuestId);
-                }
-
-                @if (quest != null)
-                {
-                    <div class="quest-panel">
-                        <strong>@quest.QuestName</strong>
-                        <p>@quest.Description</p>
-
-                        @if (myQuest == null)
-                        {
-                            <button @onclick="async () => await AcceptQuest(quest.QuestId)">퀘스트 받기</button>
-                        }
-                        else if (myQuest.Completed && !myQuest.RewardReceived)
-                        {
-                            <button @onclick="async () => await ReceiveQuestReward(quest.QuestId)">보상 받기</button>
-                        }
-                        else if (myQuest.RewardReceived)
-                        {
-                            <span class="quest-complete">완료됨</span>
-                        }
-                        else
-                        {
-                            <span>@myQuest.CurrentCount / @quest.RequiredCount</span>
-                        }
-                    </div>
-                }
-
-                @if (selectedNpc.Name == "상인")
-                {
-                    <button @onclick="BuyPotion">작은 포션 구매 - 20 Gold</button>
-                }
-
-                <button @onclick="CloseShop">닫기</button>
-            </div>
-        }
-
-        <!-- ============================== -->
-        <!-- 상태창 -->
-        <!-- ============================== -->
         <div class="status-box">
             <div>닉네임: @playerName</div>
             <div>직업: @GetJobName(myJob)</div>
             <div>HP: @myHp / @myMaxHp</div>
-            <div>Lv: @myLevel</div>
-            <div>EXP: @myExp / @(myLevel * 30)</div>
+            <div>Lv: @myLevel / EXP: @myExp</div>
             <div>Gold: @myGold</div>
-            <div>공격력: @myAttackPower</div>
-            <div>방어력: @myDefense</div>
-            <div>스킬포인트: @mySkillPoint</div>
+            <div>공격력: @myAttackPower / 방어력: @myDefense</div>
+            <div>스탯P: @myStatPoint / 스킬P: @mySkillPoint</div>
             <div>Dash: @(canDash ? "가능" : "쿨타임")</div>
         </div>
 
-        <!-- ============================== -->
-        <!-- 플레이어 -->
-        <!-- ============================== -->
         <div class="player @(isDashing ? "dash-effect" : "")" style="left:@($"{myX}px"); top:@($"{myY}px");">
             <div class="name">@playerName</div>
             <img src="@playerImage" class="player-img" />
@@ -156,9 +127,6 @@ else
             </div>
         }
 
-        <!-- ============================== -->
-        <!-- 몬스터 / 드랍 -->
-        <!-- ============================== -->
         @foreach (var monster in monsters)
         {
             <div class="monster" style="left:@($"{monster.X}px"); top:@($"{monster.Y}px");">
@@ -182,261 +150,171 @@ else
             </div>
         }
 
-        <!-- ============================== -->
-        <!-- 인벤토리 -->
-        <!-- ============================== -->
         @if (showInventory)
         {
-            <div class="inventory-box">
-                <h4>인벤토리</h4>
+            <div class="rpg-window inventory-window">
+                <div class="window-title">
+                    <h4>가방</h4>
+                    <button class="x-button" @onclick="() => showInventory = false">X</button>
+                </div>
 
-                @if (myInventory.Count == 0)
-                {
-                    <p>아이템 없음</p>
-                }
-                else
-                {
-                    @foreach (var item in myInventory)
-                    {
-                        var currentItemName = item.Name;
-                        <div class="inventory-item rarity-@item.Rarity.ToLower()">
-                            <div>
-                                <strong>@item.Name</strong>
-                                <span>x @item.Count</span>
-                                @if (item.ItemType == "Weapon")
+                <div class="inventory-tabs">
+                    <button class="@(inventoryTab == InventoryTab.All ? "active" : "")" @onclick="() => inventoryTab = InventoryTab.All">전체</button>
+                    <button class="@(inventoryTab == InventoryTab.Equipment ? "active" : "")" @onclick="() => inventoryTab = InventoryTab.Equipment">장비</button>
+                    <button class="@(inventoryTab == InventoryTab.Potion ? "active" : "")" @onclick="() => inventoryTab = InventoryTab.Potion">물약</button>
+                    <button class="@(inventoryTab == InventoryTab.Etc ? "active" : "")" @onclick="() => inventoryTab = InventoryTab.Etc">기타</button>
+                </div>
+
+                <div class="scroll-body inventory-scroll">
+                    <div class="bag-grid">
+                        @for (int i = 0; i < 16; i++)
+                        {
+                            var item = GetFilteredInventory().ElementAtOrDefault(i);
+                            <div class="bag-slot">
+                                @if (item != null)
                                 {
-                                    <small>무기 / 공격력 +@item.AttackBonus</small>
-                                }
-                                else if (item.ItemType == "Armor")
-                                {
-                                    <small>방어구 / 방어력 +@item.DefenseBonus</small>
+                                    <div class="item-card rarity-@item.Rarity.ToLower()">
+                                        <div class="item-icon">@GetItemIcon(item)</div>
+                                        <strong>@item.Name</strong>
+                                        <span>x @item.Count</span>
+
+                                        <div class="item-tooltip">
+                                            <b>@item.Name</b><br />
+                                            종류: @GetItemTypeName(item.ItemType)<br />
+                                            등급: @item.Rarity<br />
+                                            @if (item.AttackBonus > 0)
+                                            {
+                                                <span>공격력 +@item.AttackBonus</span><br />
+                                                <span>@GetWeaponCompareText(item)</span><br />
+                                            }
+                                            @if (item.DefenseBonus > 0)
+                                            {
+                                                <span>방어력 +@item.DefenseBonus</span><br />
+                                                <span>@GetArmorCompareText(item)</span><br />
+                                            }
+                                            판매가: @item.SellPrice Gold
+                                        </div>
+                                    </div>
+
+                                    <div class="item-actions">
+                                        @if (item.ItemType == "Consumable")
+                                        {
+                                            <button @onclick="async () => await UseInventoryItem(item.Name)">사용</button>
+                                        }
+                                        @if (item.ItemType == "Weapon" || item.ItemType == "Armor")
+                                        {
+                                            <button @onclick="async () => await EquipItem(item.Name)">장착</button>
+                                        }
+                                        <button class="sell" @onclick="async () => await SellInventoryItem(item.Name)">판매</button>
+                                    </div>
                                 }
                                 else
                                 {
-                                    <small>@item.ItemType</small>
+                                    <span class="empty-slot">빈칸</span>
                                 }
                             </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
 
-                            @if (item.Name == "작은 포션")
+        @if (showEquipmentWindow)
+        {
+            <div class="rpg-window equipment-window">
+                <div class="window-title">
+                    <h4>장비창</h4>
+                    <button class="x-button" @onclick="() => showEquipmentWindow = false">X</button>
+                </div>
+
+                <div class="scroll-body">
+                    <div class="equipment-slot"><strong>무기</strong><span>@(myWeapon?.Name ?? "없음")</span>@if (myWeapon != null) { <button @onclick='async () => await UnequipItem("Weapon")'>해제</button> }</div>
+                    <div class="equipment-slot"><strong>방어구</strong><span>@(myArmor?.Name ?? "없음")</span>@if (myArmor != null) { <button @onclick='async () => await UnequipItem("Armor")'>해제</button> }</div>
+                    <hr />
+                    <div>공격력: @myAttackPower</div>
+                    <div>방어력: @myDefense</div>
+                </div>
+            </div>
+        }
+
+        @if (showCharacterWindow)
+        {
+            <div class="rpg-window character-window">
+                <div class="window-title">
+                    <h4>캐릭터</h4>
+                    <button class="x-button" @onclick="() => showCharacterWindow = false">X</button>
+                </div>
+
+                <div class="scroll-body">
+                    <div>직업: @GetJobName(myJob)</div>
+                    <div>Lv: @myLevel</div>
+                    <div>HP: @myHp / @myMaxHp</div>
+                    <div>공격력: @myAttackPower</div>
+                    <div>방어력: @myDefense</div>
+                    <div>스탯포인트: @myStatPoint</div>
+                    <hr />
+                    <div class="stat-row"><span>STR: @myStr</span><button @onclick='async () => await AddStat("STR")'>+</button></div>
+                    <div class="stat-row"><span>DEF: @myDef</span><button @onclick='async () => await AddStat("DEF")'>+</button></div>
+                    <div class="stat-row"><span>INT: @myInt</span><button @onclick='async () => await AddStat("INT")'>+</button></div>
+                </div>
+            </div>
+        }
+
+        @if (showSkillWindow)
+        {
+            <div class="rpg-window skill-window">
+                <div class="window-title">
+                    <h4>스킬창</h4>
+                    <button class="x-button" @onclick="() => showSkillWindow = false">X</button>
+                </div>
+
+                <div>직업: @GetJobName(myJob) / 스킬포인트: @mySkillPoint</div>
+                <div class="scroll-body">
+                    @foreach (var skill in GetVisibleSkills())
+                    {
+                        var learned = myLearnedSkills.FirstOrDefault(s => s.SkillId == skill.SkillId);
+                        var learnedLevel = learned?.Level ?? 0;
+                        <div class="skill-book-item">
+                            <strong>@skill.Name</strong>
+                            <small>@skill.Description</small>
+                            <span>레벨: @learnedLevel / @skill.MaxLevel</span>
+                            <span>데미지: @skill.GetDamage(Math.Max(1, learnedLevel)) / 타격수: @skill.GetHitCount(Math.Max(1, learnedLevel)) / 타깃수: @skill.GetTargetCount(Math.Max(1, learnedLevel))</span>
+
+                            @if (skill.RequiredJob != JobType.Beginner)
                             {
-                                <button @onclick="async () => await UseInventoryItem(currentItemName)">사용</button>
+                                <button @onclick="async () => await LearnOrLevelUpSkill(skill.SkillId)">배우기/레벨업</button>
                             }
-                            else if (item.ItemType == "Weapon" || item.ItemType == "Armor")
+
+                            @if (learned != null)
                             {
-                                <button @onclick="async () => await EquipItem(currentItemName)">장착</button>
+                                <div class="slot-buttons">
+                                    @for (int slot = 1; slot <= 9; slot++)
+                                    {
+                                        var currentSlot = slot;
+                                        <button @onclick="async () => await SetSkillSlot(currentSlot, skill.SkillId)">@slot</button>
+                                    }
+                                </div>
                             }
                         </div>
                     }
-                }
-
-                <p class="inventory-help">I 키로 닫기</p>
-            </div>
-        }
-
-        <!-- ============================== -->
-        <!-- 캐릭터창 -->
-        <!-- ============================== -->
-        @if (showCharacterWindow)
-        {
-            <div class="character-window">
-                <h4>캐릭터</h4>
-                <div>직업: @GetJobName(myJob)</div>
-                <div>Lv: @myLevel</div>
-                <div>HP: @myHp / @myMaxHp</div>
-                <div>공격력: @myAttackPower</div>
-                <div>방어력: @myDefense</div>
-                <div>스탯포인트: @myStatPoint</div>
-                <div>스킬포인트: @mySkillPoint</div>
-
-                <hr />
-                <div>무기: @(myWeapon?.Name ?? "없음")</div>
-                <div>방어구: @(myArmor?.Name ?? "없음")</div>
-
-                <hr />
-                <div class="stat-row"><span>STR: @myStr</span><button @onclick='async () => await AddStat("STR")'>+</button></div>
-                <div class="stat-row"><span>DEF: @myDef</span><button @onclick='async () => await AddStat("DEF")'>+</button></div>
-                <div class="stat-row"><span>INT: @myInt</span><button @onclick='async () => await AddStat("INT")'>+</button></div>
-
-                <p>S 키로 닫기</p>
-            </div>
-        }
-
-        <!-- ============================== -->
-        <!-- 장비창 -->
-        <!-- ============================== -->
-        @if (showEquipmentWindow)
-        {
-            <div class="equipment-window">
-                <h4>장비창</h4>
-
-                <div class="equipment-slot">
-                    <strong>무기</strong>
-                    @if (myWeapon == null)
-                    {
-                        <span>없음</span>
-                    }
-                    else
-                    {
-                        <span>@myWeapon.Name</span>
-                        <small>공격력 +@myWeapon.AttackBonus</small>
-                        <button @onclick='async () => await UnequipItem("Weapon")'>해제</button>
-                    }
                 </div>
-
-                <div class="equipment-slot">
-                    <strong>방어구</strong>
-                    @if (myArmor == null)
-                    {
-                        <span>없음</span>
-                    }
-                    else
-                    {
-                        <span>@myArmor.Name</span>
-                        <small>방어력 +@myArmor.DefenseBonus</small>
-                        <button @onclick='async () => await UnequipItem("Armor")'>해제</button>
-                    }
-                </div>
-
-                <p>E 키로 닫기</p>
             </div>
         }
 
-        <!-- ============================== -->
-        <!-- 전직창 -->
-        <!-- ============================== -->
-        @if (showJobWindow)
-        {
-            <div class="job-window">
-                <h4>전직</h4>
-                <div>현재 직업: @GetJobName(myJob)</div>
-                <div>현재 레벨: @myLevel</div>
-
-                @if (myJob == JobType.Beginner)
-                {
-                    @if (myLevel >= 8)
-                    {
-                        <button @onclick="async () => await ChangeJob(JobType.Mage)">마법사 전직 - 8레벨</button>
-                    }
-
-                    @if (myLevel >= 10)
-                    {
-                        <button @onclick="async () => await ChangeJob(JobType.Warrior)">전사 전직 - 10레벨</button>
-                        <button @onclick="async () => await ChangeJob(JobType.Thief)">도적 전직 - 10레벨</button>
-                        <button @onclick="async () => await ChangeJob(JobType.Archer)">궁수 전직 - 10레벨</button>
-                    }
-
-                    @if (myLevel < 8)
-                    {
-                        <p>8레벨부터 마법사 전직 가능</p>
-                    }
-                    else if (myLevel < 10)
-                    {
-                        <p>10레벨부터 전사/도적/궁수 전직 가능</p>
-                    }
-                }
-                else
-                {
-                    <p>이미 전직 완료</p>
-                    <p>전직 이후 레벨업마다 스킬포인트 +1</p>
-                }
-
-                <p>J 키로 닫기</p>
-            </div>
-        }
-
-        <!-- ============================== -->
-        <!-- 스킬창 -->
-        <!-- ============================== -->
-        @if (showSkillWindow)
-        {
-            <div class="skill-window">
-                <h4>스킬창</h4>
-                <p class="skill-desc">스킬포인트: @mySkillPoint</p>
-                <p class="skill-desc">배운 스킬만 퀵슬롯에 등록할 수 있습니다.</p>
-
-                @if (myJob == JobType.Beginner)
-                {
-                    <p>전직 후부터 직업 스킬을 배울 수 있습니다.</p>
-                    <p>J 키로 전직창 열기</p>
-                }
-
-                @foreach (var skill in GetVisibleSkillDefinitions())
-                {
-                    var learned = myLearnedSkills.FirstOrDefault(s => s.SkillId == skill.SkillId);
-                    var learnedLevel = learned?.Level ?? 0;
-                    var canLearn = myJob != JobType.Beginner && skill.RequiredJob == myJob && myLevel >= skill.RequiredLevel;
-
-                    <div class="skill-book-item">
-                        <strong>@skill.Name</strong>
-                        <small>@skill.Description</small>
-                        <small>필요 직업: @GetJobName(skill.RequiredJob) / 필요 레벨: @skill.RequiredLevel</small>
-                        <small>레벨: @(learnedLevel == 0 ? "미습득" : $"{learnedLevel}/{skill.MaxLevel}")</small>
-                        <small>데미지: @skill.GetDamage(Math.Max(1, learnedLevel == 0 ? 1 : learnedLevel)) / 타격수: @skill.GetHitCount(Math.Max(1, learnedLevel == 0 ? 1 : learnedLevel)) / 타깃수: @skill.GetTargetCount(Math.Max(1, learnedLevel == 0 ? 1 : learnedLevel))</small>
-
-                        @if (skill.SkillId != "basic_strike")
-                        {
-                            <button disabled="@(!canLearn || mySkillPoint <= 0 || learnedLevel >= skill.MaxLevel)"
-                                    @onclick="async () => await LearnOrLevelUpSkill(skill.SkillId)">
-                                @(learnedLevel == 0 ? "배우기" : "레벨업")
-                            </button>
-                        }
-
-                        @if (learned != null)
-                        {
-                            <div class="skill-assign-buttons">
-                                @for (int slot = 1; slot <= 9; slot++)
-                                {
-                                    var currentSlot = slot;
-                                    <button @onclick="async () => await SetSkillSlot(currentSlot, skill.SkillId)">@currentSlot 번</button>
-                                }
-                            </div>
-                        }
-                    </div>
-                }
-
-                <hr />
-                <strong>현재 퀵슬롯</strong>
-                @for (int slot = 1; slot <= 9; slot++)
-                {
-                    var slotInfo = mySkillSlots.FirstOrDefault(s => s.Slot == slot);
-                    var skillName = GetSkillName(slotInfo?.SkillId ?? "");
-                    <div class="skill-slot-ui">
-                        <span>@slot 번</span>
-                        <strong>@(string.IsNullOrWhiteSpace(skillName) ? "비어있음" : skillName)</strong>
-                    </div>
-                }
-
-                <p>K 키로 닫기</p>
-            </div>
-        }
-
-        <!-- ============================== -->
-        <!-- 이펙트 -->
-        <!-- ============================== -->
         @if (showAttackEffect)
         {
             <div class="attack-effect" style="left:@($"{myX}px"); top:@($"{myY}px");"></div>
         }
 
-        @if (showSkillEffect)
-        {
-            <div class="fireball-effect" style="left:@($"{myX}px"); top:@($"{myY}px");">✨</div>
-        }
-
-        <!-- ============================== -->
-        <!-- 퀵슬롯 바 -->
-        <!-- ============================== -->
         <div class="quick-slot-bar">
-            @for (int slot = 1; slot <= 9; slot++)
+            @foreach (var slot in mySkillSlots.OrderBy(s => s.Slot))
             {
-                var slotInfo = mySkillSlots.FirstOrDefault(s => s.Slot == slot);
-                var skill = SkillDatabase.GetSkill(slotInfo?.SkillId ?? "");
                 <div class="quick-slot">
-                    <strong>@slot</strong>
-                    <span>@(skill?.Name ?? "비어있음")</span>
-                    @if (GetCooldownLeft(slot) > 0)
+                    <strong>@slot.Slot</strong>
+                    <span>@(string.IsNullOrWhiteSpace(slot.SkillId) ? "빈 슬롯" : SkillDatabase.GetName(slot.SkillId))</span>
+                    @if (GetCooldownLeft(slot.Slot) > 0)
                     {
-                        <div class="cooldown-cover">@GetCooldownLeft(slot)</div>
+                        <div class="cooldown-cover">@GetCooldownLeft(slot.Slot)</div>
                     }
                 </div>
             }
@@ -460,7 +338,6 @@ else
     private int myLevel = 1;
     private int myExp = 0;
     private int myGold = 0;
-
     private int myStr = 1;
     private int myDef = 1;
     private int myInt = 1;
@@ -468,13 +345,24 @@ else
     private int mySkillPoint = 0;
     private int myAttackPower = 10;
     private int myDefense = 0;
-
     private JobType myJob = JobType.Beginner;
     private MapType myCurrentMap = MapType.Town;
 
+    private bool showInventory = false;
+    private bool showSkillWindow = false;
+    private bool showCharacterWindow = false;
+    private bool showEquipmentWindow = false;
+    private bool canDash = true;
+    private bool isDashing = false;
+    private bool showAttackEffect = false;
+
+    private bool showPortalConfirm = false;
+    private PortalState? selectedPortal = null;
+    private BuildingState? currentBuilding = null;
+    private InventoryTab inventoryTab = InventoryTab.All;
+
     private EquipmentItem? myWeapon;
     private EquipmentItem? myArmor;
-
     private List<PlayerState> players = new();
     private List<MonsterState> monsters = new();
     private List<DroppedItem> droppedItems = new();
@@ -482,32 +370,15 @@ else
     private List<SkillSlot> mySkillSlots = new();
     private List<PlayerSkillState> myLearnedSkills = new();
     private List<PlayerQuestState> myQuests = new();
-
-    private bool showInventory = false;
-    private bool showSkillWindow = false;
-    private bool showCharacterWindow = false;
-    private bool showEquipmentWindow = false;
-    private bool showJobWindow = false;
-
-    private bool canDash = true;
-    private bool isDashing = false;
-    private bool showAttackEffect = false;
-    private bool showSkillEffect = false;
-    private bool showShop = false;
-    private bool showNpcDialog = false;
-
-    private bool showPortalConfirm = false;
-    private PortalState? selectedPortal = null;
-    private NpcState? selectedNpc = null;
-    private string npcMessage = "";
-
     private Dictionary<int, DateTime> skillCooldownEnds = new();
 
-    private List<QuestState> questDefinitions = new()
+    private List<BuildingState> buildings = new()
     {
-        new QuestState { QuestId = "merchant_slime", QuestName = "상인의 부탁", Description = "슬라임 3마리를 처치하세요.", TargetMonsterType = MonsterType.Slime, RequiredCount = 3, RewardGold = 50, RewardExp = 30, RewardItemName = "초보자 검", RewardItemType = "Weapon", RewardAttackBonus = 3, RewardRarity = "Normal" },
-        new QuestState { QuestId = "hunter_goblin", QuestName = "사냥꾼의 의뢰", Description = "고블린 2마리를 처치하세요.", TargetMonsterType = MonsterType.Goblin, RequiredCount = 2, RewardGold = 120, RewardExp = 80, RewardItemName = "고블린 갑옷", RewardItemType = "Armor", RewardDefenseBonus = 8, RewardRarity = "Rare" },
-        new QuestState { QuestId = "boss_clear", QuestName = "보스 토벌", Description = "보스 몬스터 1마리를 처치하세요.", TargetMonsterType = MonsterType.Boss, RequiredCount = 1, RewardGold = 300, RewardExp = 200, RewardItemName = "용사의 검", RewardItemType = "Weapon", RewardAttackBonus = 30, RewardRarity = "Epic" }
+        new BuildingState { Name = "물약상점", Type = BuildingType.PotionShop, X = 220, Y = 180, Icon = "🧪", Message = "물약상점에 들어갈까요?" },
+        new BuildingState { Name = "무기상점", Type = BuildingType.WeaponShop, X = 430, Y = 180, Icon = "⚔️", Message = "무기상점에 들어갈까요?" },
+        new BuildingState { Name = "방어구상점", Type = BuildingType.ArmorShop, X = 640, Y = 180, Icon = "🛡️", Message = "방어구상점에 들어갈까요?" },
+        new BuildingState { Name = "전직소", Type = BuildingType.JobHall, X = 340, Y = 430, Icon = "🏛️", Message = "전직소에 들어갈까요?" },
+        new BuildingState { Name = "의뢰소", Type = BuildingType.QuestHall, X = 560, Y = 430, Icon = "📜", Message = "의뢰소에 들어갈까요?" }
     };
 
     private List<PortalState> portals = new()
@@ -518,12 +389,54 @@ else
         new PortalState { Name = "사냥터 귀환", FromMap = MapType.BossRoom, ToMap = MapType.Field, X = 100, Y = 300, TargetX = 850, TargetY = 500, Message = "사냥터로 돌아갈까요?" }
     };
 
-    private List<NpcState> npcs = new()
+    private static readonly List<ShopItem> LocalShopItems = new()
     {
-        new NpcState { Name = "상인", X = 500, Y = 300, Message = "어서 와! 슬라임 때문에 장사가 힘들어.", QuestId = "merchant_slime" },
-        new NpcState { Name = "사냥꾼", X = 650, Y = 300, Message = "고블린을 조심해. 꽤 성가신 놈들이야.", QuestId = "hunter_goblin" },
-        new NpcState { Name = "기사단장", X = 350, Y = 300, Message = "보스 몬스터를 토벌할 용사가 필요하다.", QuestId = "boss_clear" }
+        new ShopItem { ShopType = BuildingType.PotionShop, Name = "작은 포션", ItemType = "Consumable", Price = 20, Rarity = "Normal" },
+        new ShopItem { ShopType = BuildingType.PotionShop, Name = "중간 포션", ItemType = "Consumable", Price = 60, Rarity = "Rare" },
+        new ShopItem { ShopType = BuildingType.WeaponShop, Name = "낡은 검", ItemType = "Weapon", Price = 100, AttackBonus = 5, Rarity = "Normal" },
+        new ShopItem { ShopType = BuildingType.WeaponShop, Name = "초보자 지팡이", ItemType = "Weapon", Price = 150, AttackBonus = 4, Rarity = "Normal" },
+        new ShopItem { ShopType = BuildingType.WeaponShop, Name = "초보 활", ItemType = "Weapon", Price = 180, AttackBonus = 7, Rarity = "Normal" },
+        new ShopItem { ShopType = BuildingType.WeaponShop, Name = "단검", ItemType = "Weapon", Price = 160, AttackBonus = 6, Rarity = "Normal" },
+        new ShopItem { ShopType = BuildingType.WeaponShop, Name = "고블린 검", ItemType = "Weapon", Price = 300, AttackBonus = 12, Rarity = "Rare" },
+        new ShopItem { ShopType = BuildingType.ArmorShop, Name = "가죽 갑옷", ItemType = "Armor", Price = 120, DefenseBonus = 4, Rarity = "Normal" },
+        new ShopItem { ShopType = BuildingType.ArmorShop, Name = "철 갑옷", ItemType = "Armor", Price = 350, DefenseBonus = 10, Rarity = "Rare" }
     };
+
+    private RenderFragment RenderShop(BuildingType type) => @<div class="shop-list">
+        @foreach (var item in LocalShopItems.Where(i => i.ShopType == type))
+        {
+            <div class="shop-item rarity-@item.Rarity.ToLower()">
+                <div>
+                    <strong>@GetItemIcon(item.ItemType) @item.Name</strong>
+                    <small>@GetItemTypeName(item.ItemType) / @item.Rarity</small>
+                    @if (item.AttackBonus > 0) { <small>공격력 +@item.AttackBonus</small> }
+                    @if (item.DefenseBonus > 0) { <small>방어력 +@item.DefenseBonus</small> }
+                </div>
+                <button @onclick="async () => await BuyShopItem(item.Name)">@item.Price Gold 구매</button>
+            </div>
+        }
+    </div>;
+
+    private RenderFragment RenderJobNpc() => @<div class="job-list">
+        <div>현재 직업: @GetJobName(myJob)</div>
+        <div>레벨: @myLevel</div>
+        <div>스킬포인트: @mySkillPoint</div>
+        @if (myJob == JobType.Beginner)
+        {
+            <button disabled="@(myLevel < 8)" @onclick="async () => await ChangeJob(JobType.Mage)">마법사 전직 - 8레벨</button>
+            <button disabled="@(myLevel < 10)" @onclick="async () => await ChangeJob(JobType.Warrior)">전사 전직 - 10레벨</button>
+            <button disabled="@(myLevel < 10)" @onclick="async () => await ChangeJob(JobType.Thief)">도적 전직 - 10레벨</button>
+            <button disabled="@(myLevel < 10)" @onclick="async () => await ChangeJob(JobType.Archer)">궁수 전직 - 10레벨</button>
+        }
+        else
+        {
+            <p>이미 전직했습니다.</p>
+        }
+    </div>;
+
+    private RenderFragment RenderQuestNpc() => @<div class="quest-list">
+        <p>의뢰는 추후 계속 추가할 수 있습니다.</p>
+    </div>;
 
     protected override async Task OnInitializedAsync()
     {
@@ -536,14 +449,7 @@ else
         hubConnection.On<List<MonsterState>>("UpdateMonsters", UpdateMonsters);
         hubConnection.On<List<DroppedItem>>("UpdateDrops", UpdateDrops);
 
-        try
-        {
-            await hubConnection.StartAsync();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("SignalR 연결 실패: " + ex.Message);
-        }
+        await hubConnection.StartAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -557,67 +463,35 @@ else
 
     private async Task JoinGame()
     {
-        if (string.IsNullOrWhiteSpace(playerName))
-            playerName = "Player";
-
-        if (string.IsNullOrWhiteSpace(roomCode))
-            roomCode = "room1";
-
+        if (string.IsNullOrWhiteSpace(playerName)) playerName = "Player";
+        if (string.IsNullOrWhiteSpace(roomCode)) roomCode = "room1";
         joined = true;
         StateHasChanged();
 
-        if (hubConnection == null)
-            return;
-
-        await hubConnection.SendAsync("JoinGame", roomCode, playerName);
-        AiService.Start(hubConnection);
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("JoinGame", roomCode, playerName);
+            AiService.Start(hubConnection);
+        }
     }
 
     private void UpdatePlayers(List<PlayerState> updatedPlayers)
     {
         players = updatedPlayers;
         var me = players.FirstOrDefault(p => p.Name == playerName);
-
         if (me != null)
         {
-            myX = me.X;
-            myY = me.Y;
-            myHp = me.Hp;
-            myMaxHp = me.MaxHp;
-            myLevel = me.Level;
-            myExp = me.Exp;
-            myGold = me.Gold;
-            myCurrentMap = me.CurrentMap;
-            myStr = me.Str;
-            myDef = me.Def;
-            myInt = me.Int;
-            myStatPoint = me.StatPoint;
-            mySkillPoint = me.SkillPoint;
-            myAttackPower = me.AttackPower;
-            myDefense = me.Defense;
-            myJob = me.Job;
-            myInventory = me.Inventory;
-            mySkillSlots = me.SkillSlots;
-            myLearnedSkills = me.LearnedSkills;
-            myWeapon = me.Weapon;
-            myArmor = me.Armor;
-            myQuests = me.Quests;
+            myX = me.X; myY = me.Y; myHp = me.Hp; myMaxHp = me.MaxHp; myLevel = me.Level; myExp = me.Exp; myGold = me.Gold;
+            myCurrentMap = me.CurrentMap; myStr = me.Str; myDef = me.Def; myInt = me.Int; myStatPoint = me.StatPoint; mySkillPoint = me.SkillPoint;
+            myAttackPower = me.AttackPower; myDefense = me.Defense; myJob = me.Job;
+            myInventory = me.Inventory; mySkillSlots = me.SkillSlots; myLearnedSkills = me.LearnedSkills; myQuests = me.Quests;
+            myWeapon = me.Weapon; myArmor = me.Armor;
         }
-
         InvokeAsync(StateHasChanged);
     }
 
-    private void UpdateMonsters(List<MonsterState> updatedMonsters)
-    {
-        monsters = updatedMonsters;
-        InvokeAsync(StateHasChanged);
-    }
-
-    private void UpdateDrops(List<DroppedItem> updatedDrops)
-    {
-        droppedItems = updatedDrops;
-        InvokeAsync(StateHasChanged);
-    }
+    private void UpdateMonsters(List<MonsterState> updatedMonsters) { monsters = updatedMonsters; InvokeAsync(StateHasChanged); }
+    private void UpdateDrops(List<DroppedItem> updatedDrops) { droppedItems = updatedDrops; InvokeAsync(StateHasChanged); }
 
     [JSInvokable]
     public async Task OnKeyDown(string key)
@@ -626,6 +500,7 @@ else
         {
             case "ArrowUp":
                 if (TryOpenPortalConfirm()) return;
+                if (TryEnterBuilding()) return;
                 await MovePlayer(0, -10, "up");
                 break;
             case "ArrowDown": await MovePlayer(0, 10, "down"); break;
@@ -646,211 +521,32 @@ else
             case "k": case "K": showSkillWindow = !showSkillWindow; await InvokeAsync(StateHasChanged); break;
             case "s": case "S": showCharacterWindow = !showCharacterWindow; await InvokeAsync(StateHasChanged); break;
             case "e": case "E": showEquipmentWindow = !showEquipmentWindow; await InvokeAsync(StateHasChanged); break;
-            case "j": case "J": showJobWindow = !showJobWindow; await InvokeAsync(StateHasChanged); break;
             case "z": case "Z": await PickupOrInteract(); break;
         }
     }
 
-    private async Task MovePlayer(int moveX, int moveY, string direction)
+    private bool TryEnterBuilding()
     {
-        int nextX = myX + moveX;
-        int nextY = myY + moveY;
-
-        if (IsBlockedTile(nextX, nextY))
-            return;
-
-        var result = InputService.Move(myX, myY, moveX, moveY, direction);
-        myX = result.x;
-        myY = result.y;
-
-        playerImage = direction switch
-        {
-            "up" => "/images/player/up.png",
-            "down" => "/images/player/down.png",
-            "left" => "/images/player/left.png",
-            "right" => "/images/player/right.png",
-            _ => playerImage
-        };
-
-        CloseNpcDialogIfFar();
-        await SyncPlayerPosition();
+        if (myCurrentMap != MapType.Town) return false;
+        var building = buildings.FirstOrDefault(b => Math.Abs(b.X - myX) < 90 && Math.Abs(b.Y - myY) < 80);
+        if (building == null) return false;
+        currentBuilding = building;
+        InvokeAsync(StateHasChanged);
+        return true;
     }
 
-    private async Task Dash()
-    {
-        if (!canDash) return;
-
-        canDash = false;
-        isDashing = true;
-
-        var result = InputService.Dash(myX, myY);
-
-        if (!IsBlockedTile(result.x, result.y))
-        {
-            myX = result.x;
-            myY = result.y;
-            await SyncPlayerPosition();
-        }
-
-        await Task.Delay(150);
-        isDashing = false;
-        await InvokeAsync(StateHasChanged);
-
-        await Task.Delay(850);
-        canDash = true;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task AttackMonster()
-    {
-        showAttackEffect = true;
-        await InvokeAsync(StateHasChanged);
-
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("AttackMonster");
-
-        await Task.Delay(150);
-        showAttackEffect = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task UseSkill(int slot)
-    {
-        var slotInfo = mySkillSlots.FirstOrDefault(s => s.Slot == slot);
-        var skill = SkillDatabase.GetSkill(slotInfo?.SkillId ?? "");
-
-        if (slotInfo == null || skill == null)
-            return;
-
-        if (GetCooldownLeft(slot) > 0)
-            return;
-
-        skillCooldownEnds[slot] = DateTime.Now.AddSeconds(skill.CooldownSeconds);
-
-        showSkillEffect = true;
-        await InvokeAsync(StateHasChanged);
-
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("UseSkillFromSlot", slot);
-
-        await Task.Delay(250);
-        showSkillEffect = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    private int GetCooldownLeft(int slot)
-    {
-        if (!skillCooldownEnds.ContainsKey(slot))
-            return 0;
-
-        var left = skillCooldownEnds[slot] - DateTime.Now;
-        return left.TotalSeconds <= 0 ? 0 : (int)Math.Ceiling(left.TotalSeconds);
-    }
-
-    private async Task ChangeJob(JobType job)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("ChangeJob", job);
-    }
-
-    private async Task LearnOrLevelUpSkill(string skillId)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("LearnOrLevelUpSkill", skillId);
-    }
-
-    private async Task SetSkillSlot(int slot, string skillId)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("SetSkillSlot", slot, skillId);
-    }
-
-    private async Task AddStat(string statName)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("AddStat", statName);
-    }
-
-    private async Task BuyPotion()
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("BuyPotion");
-    }
-
-    private async Task UseInventoryItem(string itemName)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("UseInventoryItem", itemName);
-    }
-
-    private async Task EquipItem(string itemName)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("EquipItem", itemName);
-    }
-
-    private async Task UnequipItem(string equipmentType)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("UnequipItem", equipmentType);
-    }
-
-    private async Task AcceptQuest(string questId)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("AcceptQuest", questId);
-    }
-
-    private async Task ReceiveQuestReward(string questId)
-    {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("ReceiveQuestReward", questId);
-    }
+    private void CloseBuilding() => currentBuilding = null;
 
     private async Task PickupOrInteract()
     {
-        var npc = npcs.FirstOrDefault(n => myCurrentMap == MapType.Town && Math.Abs(n.X - myX) < 80 && Math.Abs(n.Y - myY) < 80);
-        if (npc != null)
-        {
-            selectedNpc = npc;
-            npcMessage = npc.Message;
-            showNpcDialog = true;
-            showShop = true;
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
-
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("PickupItem");
-    }
-
-    private void CloseShop()
-    {
-        showShop = false;
-        selectedNpc = null;
-    }
-
-    private void CloseNpcDialogIfFar()
-    {
-        if (selectedNpc == null) return;
-
-        if (Math.Abs(selectedNpc.X - myX) > 120 || Math.Abs(selectedNpc.Y - myY) > 120)
-        {
-            showNpcDialog = false;
-            showShop = false;
-            selectedNpc = null;
-        }
+        if (TryEnterBuilding()) return;
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("PickupItem");
     }
 
     private bool TryOpenPortalConfirm()
     {
-        var portal = portals.FirstOrDefault(p =>
-            p.FromMap == myCurrentMap &&
-            Math.Abs(p.X - myX) < 70 &&
-            Math.Abs(p.Y - myY) < 70);
-
+        var portal = portals.FirstOrDefault(p => p.FromMap == myCurrentMap && Math.Abs(p.X - myX) < 70 && Math.Abs(p.Y - myY) < 70);
         if (portal == null) return false;
-
         selectedPortal = portal;
         showPortalConfirm = true;
         InvokeAsync(StateHasChanged);
@@ -860,10 +556,10 @@ else
     private async Task ConfirmPortalMove()
     {
         if (selectedPortal == null) return;
-
         if (hubConnection?.State == HubConnectionState.Connected)
+        {
             await hubConnection.SendAsync("ChangeMap", selectedPortal.ToMap, selectedPortal.TargetX, selectedPortal.TargetY);
-
+        }
         showPortalConfirm = false;
         selectedPortal = null;
         await InvokeAsync(StateHasChanged);
@@ -876,105 +572,233 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task MovePlayer(int moveX, int moveY, string direction)
+    {
+        int nextX = myX + moveX;
+        int nextY = myY + moveY;
+        if (IsBlockedTile(nextX, nextY)) return;
+
+        var result = InputService.Move(myX, myY, moveX, moveY, direction);
+        myX = result.x;
+        myY = result.y;
+        playerImage = direction switch
+        {
+            "up" => "/images/player/up.png",
+            "down" => "/images/player/down.png",
+            "left" => "/images/player/left.png",
+            "right" => "/images/player/right.png",
+            _ => playerImage
+        };
+        await SyncPlayerPosition();
+    }
+
+    private async Task Dash()
+    {
+        if (!canDash) return;
+        canDash = false;
+        isDashing = true;
+        var result = InputService.Dash(myX, myY);
+        if (!IsBlockedTile(result.x, result.y))
+        {
+            myX = result.x;
+            myY = result.y;
+            await SyncPlayerPosition();
+        }
+        await Task.Delay(150);
+        isDashing = false;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(850);
+        canDash = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AttackMonster()
+    {
+        showAttackEffect = true;
+        await InvokeAsync(StateHasChanged);
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("AttackMonster");
+        await Task.Delay(150);
+        showAttackEffect = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UseSkill(int slot)
+    {
+        var slotInfo = mySkillSlots.FirstOrDefault(s => s.Slot == slot);
+        if (slotInfo == null || string.IsNullOrWhiteSpace(slotInfo.SkillId)) return;
+        var skill = SkillDatabase.GetSkill(slotInfo.SkillId);
+        if (skill == null) return;
+        if (GetCooldownLeft(slot) > 0) return;
+
+        skillCooldownEnds[slot] = DateTime.Now.AddSeconds(skill.CooldownSeconds);
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("UseSkillFromSlot", slot);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private int GetCooldownLeft(int slot)
+    {
+        if (!skillCooldownEnds.ContainsKey(slot)) return 0;
+        var left = skillCooldownEnds[slot] - DateTime.Now;
+        return left.TotalSeconds <= 0 ? 0 : (int)Math.Ceiling(left.TotalSeconds);
+    }
+
     private async Task SyncPlayerPosition()
     {
-        if (hubConnection?.State == HubConnectionState.Connected)
-            await hubConnection.SendAsync("MovePlayer", myX, myY);
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("MovePlayer", myX, myY);
     }
 
-    private List<SkillDefinition> GetVisibleSkillDefinitions()
+    private async Task BuyShopItem(string itemName)
     {
-        var result = new List<SkillDefinition>();
-        var basic = SkillDatabase.GetSkill("basic_strike");
-        if (basic != null) result.Add(basic);
-
-        if (myJob != JobType.Beginner)
-            result.AddRange(SkillDatabase.GetSkillsForJob(myJob));
-
-        return result;
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("BuyShopItem", itemName);
     }
 
-    private string GetSkillName(string skillId) => SkillDatabase.GetSkill(skillId)?.Name ?? "";
-
-    private string GetJobName(JobType job)
+    private async Task SellInventoryItem(string itemName)
     {
-        return job switch
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("SellInventoryItem", itemName);
+    }
+
+    private async Task UseInventoryItem(string itemName)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("UseInventoryItem", itemName);
+    }
+
+    private async Task EquipItem(string itemName)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("EquipItem", itemName);
+    }
+
+    private async Task UnequipItem(string equipmentType)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("UnequipItem", equipmentType);
+    }
+
+    private async Task AddStat(string statName)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("AddStat", statName);
+    }
+
+    private async Task ChangeJob(JobType job)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("ChangeJob", job);
+    }
+
+    private async Task LearnOrLevelUpSkill(string skillId)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("LearnOrLevelUpSkill", skillId);
+    }
+
+    private async Task SetSkillSlot(int slot, string skillId)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("SetSkillSlot", slot, skillId);
+    }
+
+    private List<InventoryItem> GetFilteredInventory()
+    {
+        return inventoryTab switch
         {
-            JobType.Beginner => "초보자",
-            JobType.Mage => "마법사",
-            JobType.Warrior => "전사",
-            JobType.Thief => "도적",
-            JobType.Archer => "궁수",
-            _ => "알 수 없음"
+            InventoryTab.Equipment => myInventory.Where(i => i.ItemType == "Weapon" || i.ItemType == "Armor").ToList(),
+            InventoryTab.Potion => myInventory.Where(i => i.ItemType == "Consumable").ToList(),
+            InventoryTab.Etc => myInventory.Where(i => i.ItemType != "Weapon" && i.ItemType != "Armor" && i.ItemType != "Consumable").ToList(),
+            _ => myInventory.ToList()
         };
     }
 
-    private string GetMapName(MapType map)
+    private List<SkillDefinition> GetVisibleSkills()
     {
-        return map switch
-        {
-            MapType.Town => "마을",
-            MapType.Field => "사냥터",
-            MapType.BossRoom => "보스방",
-            _ => "알 수 없음"
-        };
+        return SkillDatabase.Skills
+            .Where(s => s.RequiredJob == JobType.Beginner || s.RequiredJob == myJob)
+            .ToList();
     }
 
-    private string GetMonsterImage(MonsterType type)
+    private string GetMapName(MapType map) => map switch
     {
-        return type switch
-        {
-            MonsterType.Slime => "/images/monster/slime.png",
-            MonsterType.Bat => "/images/monster/bat.png",
-            MonsterType.Goblin => "/images/monster/goblin.png",
-            MonsterType.Boss => "/images/monster/boss.png",
-            _ => "/images/monster/slime.png"
-        };
+        MapType.Town => "마을",
+        MapType.Field => "사냥터",
+        MapType.BossRoom => "보스방",
+        _ => "알 수 없음"
+    };
+
+    private string GetJobName(JobType job) => job switch
+    {
+        JobType.Beginner => "초보자",
+        JobType.Mage => "마법사",
+        JobType.Warrior => "전사",
+        JobType.Thief => "도적",
+        JobType.Archer => "궁수",
+        _ => "알 수 없음"
+    };
+
+    private string GetItemTypeName(string type) => type switch
+    {
+        "Weapon" => "무기",
+        "Armor" => "방어구",
+        "Consumable" => "물약",
+        "Material" => "기타",
+        _ => type
+    };
+
+    private string GetItemIcon(InventoryItem item) => GetItemIcon(item.ItemType);
+    private string GetItemIcon(string itemType) => itemType switch
+    {
+        "Weapon" => "⚔️",
+        "Armor" => "🛡️",
+        "Consumable" => "🧪",
+        "Material" => "📦",
+        _ => "📦"
+    };
+
+    private string GetWeaponCompareText(InventoryItem item)
+    {
+        int current = myWeapon?.AttackBonus ?? 0;
+        int diff = item.AttackBonus - current;
+        return diff >= 0 ? $"현재 무기보다 +{diff}" : $"현재 무기보다 {diff}";
     }
+
+    private string GetArmorCompareText(InventoryItem item)
+    {
+        int current = myArmor?.DefenseBonus ?? 0;
+        int diff = item.DefenseBonus - current;
+        return diff >= 0 ? $"현재 방어구보다 +{diff}" : $"현재 방어구보다 {diff}";
+    }
+
+    private string GetMonsterImage(MonsterType type) => type switch
+    {
+        MonsterType.Slime => "/images/monster/slime.png",
+        MonsterType.Bat => "/images/monster/bat.png",
+        MonsterType.Goblin => "/images/monster/goblin.png",
+        MonsterType.Boss => "/images/monster/boss.png",
+        _ => "/images/monster/slime.png"
+    };
 
     private string GetTileClass(int x, int y)
     {
-        if (x == 0 || x == 19 || y == 0 || y == 12)
-            return "tile wall";
-
-        if (y == 2 && x >= 4 && x <= 8)
-            return "tile water";
-
-        if (y == 8 && x >= 12 && x <= 15)
-            return "tile wall";
-
+        if (x == 0 || x == 19 || y == 0 || y == 12) return "tile wall";
         if (myCurrentMap == MapType.Town)
         {
-            if (y == 6 || x == 10)
-                return "tile town-road";
-            if ((x == 3 && y == 3) || (x == 16 && y == 4))
-                return "tile house";
+            if (y == 6 || x == 9 || x == 10) return "tile town-road";
             return "tile town-grass";
         }
-
         if (myCurrentMap == MapType.BossRoom)
-            return "tile dungeon-floor";
-
+        {
+            if (x == 0 || x == 19 || y == 0 || y == 12) return "tile wall";
+            return "tile boss-floor";
+        }
+        if (y == 2 && x >= 4 && x <= 8) return "tile water";
+        if (y == 8 && x >= 12 && x <= 15) return "tile wall";
         return "tile grass";
     }
 
     private bool IsBlockedTile(int x, int y)
     {
-        if (x < 24 || x > 976 || y < 24 || y > 626)
-            return true;
-
+        if (x < 24 || x > 976 || y < 24 || y > 626) return true;
         int tileX = x / 50;
         int tileY = y / 50;
-
-        if (tileX <= 0 || tileX >= 19 || tileY <= 0 || tileY >= 12)
-            return true;
-
-        if (tileY == 2 && tileX >= 4 && tileX <= 8)
-            return true;
-
-        if (tileY == 8 && tileX >= 12 && tileX <= 15)
-            return true;
-
+        if (tileX <= 0 || tileX >= 19 || tileY <= 0 || tileY >= 12) return true;
+        if (myCurrentMap != MapType.Town)
+        {
+            if (tileY == 2 && tileX >= 4 && tileX <= 8) return true;
+            if (tileY == 8 && tileX >= 12 && tileX <= 15) return true;
+        }
         return false;
     }
 
@@ -982,8 +806,6 @@ else
     {
         AiService.Stop();
         dotNetRef?.Dispose();
-
-        if (hubConnection != null)
-            await hubConnection.DisposeAsync();
+        if (hubConnection != null) await hubConnection.DisposeAsync();
     }
 }

@@ -1,6 +1,6 @@
 namespace MyBlazorApp.Models;
 
-// 플레이어가 배운 스킬 정보
+// 플레이어가 배운 스킬 상태
 public class PlayerSkillState
 {
     public string SkillId { get; set; } = "";

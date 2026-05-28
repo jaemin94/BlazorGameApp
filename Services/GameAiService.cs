@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MyBlazorApp.Services;
 
-// 클라이언트에서 주기적으로 서버에 몬스터 AI 갱신 요청
+// 클라이언트에서 주기적으로 서버 몬스터 AI 갱신 요청
 public class GameAiService
 {
     private PeriodicTimer? monsterTimer;
@@ -11,9 +11,7 @@ public class GameAiService
 
     public void Start(HubConnection hubConnection)
     {
-        if (started)
-            return;
-
+        if (started) return;
         started = true;
         monsterCts = new CancellationTokenSource();
         monsterTimer = new PeriodicTimer(TimeSpan.FromMilliseconds(300));
@@ -28,10 +26,7 @@ public class GameAiService
                         await hubConnection.SendAsync("UpdateMonsters");
                 }
             }
-            catch
-            {
-                // 종료 시 예외 무시
-            }
+            catch { }
         });
     }
 

@@ -1,120 +1,97 @@
 namespace MyBlazorApp.Models;
 
-// 스킬 목록 DB 역할
+// 스킬 데이터베이스
 public static class SkillDatabase
 {
     public static readonly List<SkillDefinition> Skills = new()
     {
-        // 전직 전 기본 스킬. 처음부터 배워져 있음.
         new SkillDefinition
         {
             SkillId = "basic_strike",
             Name = "강타",
-            Description = "가까운 적 1명을 강하게 공격합니다.",
+            Description = "초보자 기본 공격 스킬입니다.",
             RequiredJob = JobType.Beginner,
             RequiredLevel = 1,
             MaxLevel = 1,
-            BaseDamage = 8,
-            DamagePerLevel = 0,
-            BaseRange = 90,
-            BaseHitCount = 1,
-            BaseTargetCount = 1,
-            CooldownSeconds = 1
+            CooldownSeconds = 1,
+            BaseDamage = 5,
+            BaseRange = 90
         },
-
-        // 마법사
         new SkillDefinition
         {
             SkillId = "mage_fireball",
             Name = "파이어볼",
-            Description = "불덩이를 날려 범위 내 적을 공격합니다. 레벨이 오르면 데미지/타깃수/사거리가 증가합니다.",
+            Description = "불덩이를 날려 주변 적에게 피해를 줍니다.",
             RequiredJob = JobType.Mage,
             RequiredLevel = 8,
-            MaxLevel = 10,
+            CooldownSeconds = 2,
             BaseDamage = 20,
             DamagePerLevel = 7,
-            BaseRange = 180,
-            RangePerLevel = 8,
             BaseHitCount = 1,
-            HitCountBonusEveryLevel = 5,
+            HitCountPerLevels = 4,
             BaseTargetCount = 2,
-            TargetCountBonusEveryLevel = 3,
-            CooldownSeconds = 2
+            TargetCountPerLevels = 3,
+            BaseRange = 180,
+            RangePerLevel = 5
         },
         new SkillDefinition
         {
             SkillId = "mage_heal",
             Name = "힐",
-            Description = "자신의 HP를 회복합니다. 레벨이 오르면 회복량이 증가합니다.",
+            Description = "자신의 HP를 회복합니다.",
             RequiredJob = JobType.Mage,
             RequiredLevel = 8,
-            MaxLevel = 10,
-            BaseDamage = 0,
-            DamagePerLevel = 0,
-            BaseRange = 0,
-            BaseHitCount = 1,
-            BaseTargetCount = 1,
-            CooldownSeconds = 5
+            CooldownSeconds = 5,
+            BaseDamage = 0
         },
-
-        // 전사
         new SkillDefinition
         {
             SkillId = "warrior_spin",
             Name = "회전베기",
-            Description = "주변 적을 베어냅니다. 레벨이 오르면 데미지/타깃수/타격수가 증가합니다.",
+            Description = "주변 적을 베어 광역 피해를 줍니다.",
             RequiredJob = JobType.Warrior,
             RequiredLevel = 10,
-            MaxLevel = 10,
+            CooldownSeconds = 3,
             BaseDamage = 18,
             DamagePerLevel = 6,
-            BaseRange = 120,
-            RangePerLevel = 4,
+            BaseTargetCount = 2,
+            TargetCountPerLevels = 3,
             BaseHitCount = 1,
-            HitCountBonusEveryLevel = 4,
-            BaseTargetCount = 3,
-            TargetCountBonusEveryLevel = 2,
-            CooldownSeconds = 3
+            HitCountPerLevels = 5,
+            BaseRange = 130,
+            RangePerLevel = 3
         },
-
-        // 도적
         new SkillDefinition
         {
             SkillId = "thief_double_slash",
             Name = "더블 슬래시",
-            Description = "가까운 적을 빠르게 여러 번 공격합니다. 레벨이 오르면 타격수와 데미지가 증가합니다.",
+            Description = "한 대상에게 빠르게 여러 번 공격합니다.",
             RequiredJob = JobType.Thief,
             RequiredLevel = 10,
-            MaxLevel = 10,
-            BaseDamage = 13,
+            CooldownSeconds = 2,
+            BaseDamage = 12,
             DamagePerLevel = 5,
-            BaseRange = 90,
-            RangePerLevel = 3,
             BaseHitCount = 2,
-            HitCountBonusEveryLevel = 3,
+            HitCountPerLevels = 3,
             BaseTargetCount = 1,
-            TargetCountBonusEveryLevel = 0,
-            CooldownSeconds = 2
+            BaseRange = 90
         },
-
-        // 궁수
         new SkillDefinition
         {
             SkillId = "archer_power_shot",
             Name = "파워샷",
-            Description = "먼 거리의 적을 강하게 공격합니다. 레벨이 오르면 사거리와 데미지가 증가합니다.",
+            Description = "먼 거리의 적을 강하게 공격합니다.",
             RequiredJob = JobType.Archer,
             RequiredLevel = 10,
-            MaxLevel = 10,
+            CooldownSeconds = 3,
             BaseDamage = 24,
             DamagePerLevel = 8,
-            BaseRange = 260,
-            RangePerLevel = 12,
             BaseHitCount = 1,
-            HitCountBonusEveryLevel = 5,
+            HitCountPerLevels = 5,
             BaseTargetCount = 1,
-            TargetCountBonusEveryLevel = 4,
-            CooldownSeconds = 3
+            TargetCountPerLevels = 4,
+            BaseRange = 260,
+            RangePerLevel = 8
         }
     };
 
@@ -123,8 +100,8 @@ public static class SkillDatabase
         return Skills.FirstOrDefault(s => s.SkillId == skillId);
     }
 
-    public static List<SkillDefinition> GetSkillsForJob(JobType job)
+    public static string GetName(string skillId)
     {
-        return Skills.Where(s => s.RequiredJob == job).ToList();
+        return GetSkill(skillId)?.Name ?? skillId;
     }
 }
