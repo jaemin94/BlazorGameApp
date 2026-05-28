@@ -626,3 +626,695 @@ button { cursor: pointer; }
     background: rgba(15, 23, 42, 0.55);
     border-radius: 999px;
 }
+
+/* =========================================================
+   Premium RPG Redesign Patch
+   적용 내용:
+   1) 전체 판타지 톤 리디자인
+   2) Game.razor UI 구조 강화
+   3) HP/EXP 게이지바
+   4) 하단 퀵슬롯 RPG 스타일
+   5) 인벤토리/상점/스킬/스탯 패널 통일
+   6) 맵/건물/타일 디자인 강화
+   ========================================================= */
+
+:root {
+    --rpg-bg: #080b12;
+    --rpg-panel: rgba(15, 18, 28, 0.94);
+    --rpg-panel-2: rgba(28, 23, 17, 0.96);
+    --rpg-border: rgba(212, 175, 55, 0.72);
+    --rpg-gold: #f5c95a;
+    --rpg-gold-dark: #9f6b18;
+    --rpg-text: #f8ead0;
+    --rpg-muted: #b9a98d;
+    --rpg-red: #ef4444;
+    --rpg-blue: #38bdf8;
+    --rpg-green: #22c55e;
+    --rpg-purple: #c084fc;
+    --rpg-shadow: 0 18px 50px rgba(0, 0, 0, 0.62);
+}
+
+html, body {
+    background:
+        radial-gradient(circle at 20% 10%, rgba(88, 28, 135, 0.28), transparent 34%),
+        radial-gradient(circle at 80% 20%, rgba(180, 83, 9, 0.16), transparent 30%),
+        linear-gradient(180deg, #090d18, #05070d 65%, #02030a);
+    color: var(--rpg-text);
+}
+
+.game-page-title {
+    width: 1000px;
+    margin: 12px 0 10px;
+    padding: 10px 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(245, 201, 90, 0.36);
+    background:
+        linear-gradient(90deg, rgba(245, 201, 90, 0.16), rgba(15, 18, 28, 0.84), rgba(245, 201, 90, 0.10));
+    color: var(--rpg-gold);
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.85);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.38);
+}
+
+.join-box {
+    width: 420px;
+    padding: 22px;
+    margin-top: 22px;
+    border-radius: 18px;
+    border: 1px solid var(--rpg-border);
+    background: linear-gradient(180deg, rgba(25, 20, 15, .96), rgba(10, 13, 22, .96));
+    box-shadow: var(--rpg-shadow);
+}
+
+.join-box input {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(245,201,90,.28);
+    background: rgba(0,0,0,.36);
+    color: var(--rpg-text);
+}
+
+.join-box button,
+.rpg-window button,
+.modal-window button,
+.shop-item button,
+.skill-book-item button,
+.item-actions button,
+.save-custom-button,
+.choice-buttons button {
+    border: 1px solid rgba(255, 235, 170, 0.18);
+    border-radius: 10px;
+    background: linear-gradient(180deg, #b88728, #6f4310);
+    color: #fff8dc;
+    font-weight: 800;
+    text-shadow: 0 1px 1px rgba(0,0,0,.7);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 6px 12px rgba(0,0,0,.28);
+    transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+}
+
+.join-box button:hover,
+.rpg-window button:hover,
+.modal-window button:hover,
+.shop-item button:hover,
+.skill-book-item button:hover,
+.item-actions button:hover,
+.save-custom-button:hover,
+.choice-buttons button:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.15);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 8px 16px rgba(0,0,0,.38);
+}
+
+.game-area {
+    width: 1000px;
+    height: 650px;
+    border-radius: 22px;
+    border: 3px solid rgba(245,201,90,.55);
+    background:
+        linear-gradient(180deg, rgba(255,255,255,.03), transparent 22%),
+        #101827;
+    box-shadow:
+        0 0 0 6px rgba(0,0,0,.35),
+        0 28px 70px rgba(0,0,0,.68),
+        inset 0 0 45px rgba(0,0,0,.5);
+    overflow: hidden;
+}
+
+.game-area::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    background:
+        radial-gradient(circle at 50% 50%, transparent 48%, rgba(0,0,0,.18) 100%),
+        linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size: 100% 100%, 50px 50px, 50px 50px;
+}
+
+.tile-map { z-index: 0; }
+
+.tile {
+    box-sizing: border-box;
+    border: 1px solid rgba(0,0,0,.08);
+}
+
+.town-grass {
+    background-color: #2d7c37;
+    background-image:
+        radial-gradient(circle at 12px 10px, rgba(255,255,255,.16) 1px, transparent 3px),
+        radial-gradient(circle at 38px 34px, rgba(9, 65, 31, .55) 2px, transparent 4px),
+        linear-gradient(135deg, rgba(255,255,255,.08), transparent 35%, rgba(0,0,0,.1));
+}
+
+.town-road {
+    background-color: #b68a57;
+    background-image:
+        linear-gradient(45deg, rgba(255,255,255,.08) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(0,0,0,.10) 25%, transparent 25%);
+    background-size: 18px 18px;
+    border-color: rgba(70,42,20,.20);
+}
+
+.grass {
+    background-color: #245d2d;
+    background-image:
+        radial-gradient(circle at 20px 18px, rgba(107, 191, 89, .35) 2px, transparent 5px),
+        radial-gradient(circle at 35px 36px, rgba(15, 70, 32, .60) 2px, transparent 5px),
+        linear-gradient(120deg, rgba(0,0,0,.08), transparent 50%);
+}
+
+.water {
+    background:
+        linear-gradient(135deg, #1d4ed8, #0ea5e9, #155e75);
+    box-shadow: inset 0 0 20px rgba(255,255,255,.12);
+    animation: waterPulse 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes waterPulse {
+    from { filter: brightness(.9); }
+    to { filter: brightness(1.14); }
+}
+
+.wall {
+    background:
+        linear-gradient(135deg, #334155, #1f2937);
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: inset 0 0 10px rgba(0,0,0,.35);
+}
+
+.boss-floor {
+    background-color: #32121e;
+    background-image:
+        radial-gradient(circle at 25px 25px, rgba(239,68,68,.18), transparent 18px),
+        linear-gradient(45deg, rgba(0,0,0,.18) 25%, transparent 25%);
+    background-size: 50px 50px, 20px 20px;
+}
+
+.map-name {
+    z-index: 95;
+    padding: 9px 22px;
+    border: 1px solid rgba(245,201,90,.45);
+    background: linear-gradient(180deg, rgba(35, 29, 21, .92), rgba(10, 13, 22, .92));
+    color: var(--rpg-gold);
+    font-weight: 900;
+    box-shadow: 0 8px 22px rgba(0,0,0,.44);
+}
+
+.premium-hud {
+    width: 258px;
+    padding: 12px;
+    background: linear-gradient(180deg, rgba(28, 22, 17, .96), rgba(8, 11, 18, .92));
+    border: 1px solid rgba(245, 201, 90, .52);
+    border-radius: 16px;
+    color: var(--rpg-text);
+    box-shadow: var(--rpg-shadow);
+    backdrop-filter: blur(6px);
+}
+
+.hud-header {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.hud-portrait {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle, rgba(245,201,90,.22), rgba(0,0,0,.34));
+    border: 1px solid rgba(245,201,90,.38);
+}
+
+.hud-avatar { transform: scale(.78); }
+.hud-title { display: flex; flex-direction: column; gap: 2px; }
+.hud-title strong { color: #fff4c2; font-size: 16px; }
+.hud-title span { color: var(--rpg-muted); font-size: 12px; }
+
+.gauge-row {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    align-items: center;
+    gap: 8px;
+    margin: 7px 0;
+}
+
+.gauge-row > span {
+    color: var(--rpg-gold);
+    font-weight: 900;
+    font-size: 12px;
+}
+
+.gauge {
+    position: relative;
+    height: 18px;
+    overflow: hidden;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.15);
+    background: rgba(0,0,0,.48);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.55);
+}
+
+.gauge-fill {
+    height: 100%;
+    border-radius: inherit;
+    transition: width .22s ease;
+}
+
+.hp-gauge .gauge-fill { background: linear-gradient(90deg, #991b1b, #ef4444, #fca5a5); }
+.exp-gauge .gauge-fill { background: linear-gradient(90deg, #7c3aed, #f59e0b, #fde68a); }
+.gauge b {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,.9);
+}
+
+.hud-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.hud-stats div {
+    padding: 6px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.08);
+    font-size: 12px;
+}
+
+.mini-map {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 180px;
+    padding: 10px;
+    border-radius: 16px;
+    border: 1px solid rgba(245,201,90,.48);
+    background: linear-gradient(180deg, rgba(28, 22, 17, .92), rgba(7, 10, 16, .92));
+    box-shadow: var(--rpg-shadow);
+    z-index: 96;
+    color: var(--rpg-text);
+}
+
+.mini-title {
+    color: var(--rpg-gold);
+    font-weight: 900;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.mini-grid {
+    position: relative;
+    height: 88px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.12);
+    background:
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255,255,255,.05) 1px, transparent 1px),
+        radial-gradient(circle at center, rgba(34,197,94,.18), rgba(0,0,0,.3));
+    background-size: 18px 18px, 18px 18px, 100% 100%;
+}
+
+.mini-player {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #facc15;
+    box-shadow: 0 0 10px #facc15;
+    transform: translate(-50%, -50%);
+}
+
+.mini-help {
+    margin-top: 6px;
+    color: var(--rpg-muted);
+    font-size: 10px;
+    line-height: 1.35;
+}
+
+.rpg-window,
+.modal-window,
+.building-inner-window {
+    background:
+        linear-gradient(180deg, rgba(39, 31, 22, .97), rgba(9, 12, 20, .97));
+    color: var(--rpg-text);
+    border: 2px solid rgba(245, 201, 90, .54);
+    border-radius: 18px;
+    box-shadow: var(--rpg-shadow), inset 0 0 24px rgba(245,201,90,.05);
+    backdrop-filter: blur(8px);
+}
+
+.window-title {
+    margin: -2px -2px 12px;
+    padding: 10px 12px;
+    border-radius: 16px 16px 0 0;
+    border-bottom: 1px solid rgba(245,201,90,.34);
+    background: linear-gradient(90deg, rgba(245,201,90,.24), rgba(0,0,0,.18));
+}
+
+.window-title h4 {
+    color: var(--rpg-gold);
+    font-weight: 900;
+    letter-spacing: .5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,.75);
+}
+
+.x-button {
+    min-width: 32px;
+    height: 32px;
+    background: linear-gradient(180deg, #7f1d1d, #3f0d0d) !important;
+    padding: 0 !important;
+}
+
+.scroll-body,
+.inventory-scroll,
+.skill-window .scroll-body,
+.character-window .scroll-body,
+.equipment-window .scroll-body,
+.customize-window .scroll-body,
+.building-inner-window .scroll-body {
+    max-height: 470px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.scroll-body::-webkit-scrollbar,
+.inventory-scroll::-webkit-scrollbar {
+    width: 10px;
+}
+.scroll-body::-webkit-scrollbar-track,
+.inventory-scroll::-webkit-scrollbar-track {
+    background: rgba(0,0,0,.28);
+    border-radius: 999px;
+}
+.scroll-body::-webkit-scrollbar-thumb,
+.inventory-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #f5c95a, #7a4a12);
+    border-radius: 999px;
+}
+
+.inventory-window,
+.skill-window,
+.character-window,
+.equipment-window,
+.customize-window {
+    z-index: 220;
+}
+
+.inventory-window { width: 380px; right: 18px; top: 118px; }
+.skill-window { width: 420px; left: 18px; bottom: 108px; }
+.character-window { width: 340px; left: 18px; top: 190px; }
+.equipment-window { width: 320px; right: 420px; top: 118px; }
+.customize-window { width: 400px; right: 18px; top: 118px; }
+
+.inventory-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.inventory-tabs button,
+.choice-buttons button,
+.slot-buttons button {
+    padding: 7px 9px;
+    font-size: 12px;
+}
+
+.inventory-tabs button.active,
+.choice-buttons button.active,
+.color-dot.selected {
+    outline: 2px solid var(--rpg-gold);
+    filter: brightness(1.2);
+}
+
+.bag-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+}
+
+.bag-slot {
+    position: relative;
+    min-height: 92px;
+    padding: 7px;
+    border-radius: 14px;
+    border: 1px solid rgba(245,201,90,.24);
+    background:
+        radial-gradient(circle at 50% 15%, rgba(255,255,255,.08), transparent 35%),
+        rgba(0,0,0,.32);
+    box-shadow: inset 0 0 15px rgba(0,0,0,.35);
+}
+
+.empty-slot {
+    display: grid;
+    height: 100%;
+    place-items: center;
+    color: rgba(248,234,208,.32);
+    font-size: 12px;
+}
+
+.item-card {
+    min-height: 58px;
+    padding: 6px;
+    border-radius: 11px;
+    background: rgba(255,255,255,.06);
+    text-align: center;
+}
+
+.item-icon { font-size: 22px; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+.item-card strong { display:block; font-size:11px; color:#fff4c2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.item-card span { font-size:10px; color:var(--rpg-muted); }
+
+.item-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 5px;
+}
+.item-actions button {
+    flex: 1;
+    padding: 4px 2px;
+    font-size: 10px;
+}
+.item-actions .sell { background: linear-gradient(180deg, #475569, #1e293b) !important; }
+
+.item-tooltip {
+    z-index: 999;
+    border: 1px solid rgba(245,201,90,.55);
+    background: rgba(6, 8, 14, .97);
+    color: var(--rpg-text);
+    border-radius: 12px;
+    box-shadow: 0 14px 34px rgba(0,0,0,.62);
+}
+
+.shop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.shop-item,
+.skill-book-item,
+.equipment-slot,
+.stat-row,
+.npc-card,
+.custom-section {
+    border: 1px solid rgba(245,201,90,.22);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.18));
+    box-shadow: inset 0 0 16px rgba(0,0,0,.20);
+}
+
+.shop-item {
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 10px;
+    align-items: center;
+}
+
+.shop-item strong,
+.skill-book-item strong,
+.equipment-slot strong,
+.npc-card strong {
+    color: #fff3bd;
+}
+
+.shop-item small,
+.skill-book-item small,
+.skill-book-item span,
+.npc-card p {
+    color: var(--rpg-muted);
+}
+
+.skill-book-item {
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.slot-buttons {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 4px;
+}
+
+.quick-slot-bar {
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(245,201,90,.50);
+    background: linear-gradient(180deg, rgba(25,20,16,.94), rgba(4,6,12,.94));
+    box-shadow: var(--rpg-shadow);
+    z-index: 250;
+}
+
+.quick-slot {
+    position: relative;
+    width: 78px;
+    height: 62px;
+    border-radius: 14px;
+    border: 1px solid rgba(245,201,90,.34);
+    background:
+        radial-gradient(circle at 50% 18%, rgba(245,201,90,.16), transparent 38%),
+        linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.36));
+    box-shadow: inset 0 0 15px rgba(0,0,0,.34);
+    text-align: center;
+    color: var(--rpg-text);
+    overflow: hidden;
+}
+
+.quick-slot strong {
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: rgba(0,0,0,.55);
+    color: var(--rpg-gold);
+    font-size: 11px;
+}
+
+.quick-slot span {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding: 14px 6px 4px;
+    font-size: 11px;
+    line-height: 1.2;
+    word-break: keep-all;
+}
+
+.empty-quick { opacity: .55; }
+.filled-quick { box-shadow: inset 0 0 15px rgba(0,0,0,.34), 0 0 12px rgba(245,201,90,.20); }
+
+.cooldown-cover {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0,0,0,.74);
+    color: white;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.building {
+    border: 2px solid rgba(94, 49, 15, .95);
+    border-radius: 16px;
+    background:
+        linear-gradient(180deg, rgba(255, 233, 168, .18), transparent 22%),
+        linear-gradient(135deg, #7c2d12, #431407);
+    box-shadow:
+        0 10px 18px rgba(0,0,0,.35),
+        inset 0 -8px 0 rgba(0,0,0,.18),
+        inset 0 0 0 5px rgba(245,201,90,.12);
+    z-index: 7;
+}
+
+.building::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 28px;
+    height: 34px;
+    transform: translateX(-50%);
+    border-radius: 9px 9px 0 0;
+    background: linear-gradient(180deg, #2b1608, #090502);
+    border: 1px solid rgba(245,201,90,.26);
+}
+
+.building-icon {
+    font-size: 31px;
+    text-shadow: 0 3px 8px rgba(0,0,0,.65);
+}
+
+.building-name {
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(0,0,0,.50);
+    color: #fff4c2;
+    border: 1px solid rgba(245,201,90,.25);
+    font-weight: 900;
+}
+
+.portal {
+    border-color: rgba(216,180,254,.95);
+    background: radial-gradient(circle, rgba(168,85,247,.65), rgba(59,7,100,.84));
+    animation: portalGlow 1.3s ease-in-out infinite alternate;
+}
+
+@keyframes portalGlow {
+    from { box-shadow: 0 0 12px rgba(192,132,252,.7); }
+    to { box-shadow: 0 0 28px rgba(192,132,252,1); }
+}
+
+.player,
+.monster,
+.drop-item,
+.building,
+.portal {
+    filter: drop-shadow(0 8px 8px rgba(0,0,0,.35));
+}
+
+.name,
+.monster-name,
+.monster-hp {
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 4px 8px rgba(0,0,0,.34);
+}
+
+.rarity-normal { border-color: rgba(255,255,255,.20) !important; }
+.rarity-rare { border-color: #38bdf8 !important; box-shadow: 0 0 12px rgba(56,189,248,.30) !important; }
+.rarity-epic { border-color: #c084fc !important; box-shadow: 0 0 16px rgba(192,132,252,.42) !important; }
+
+@media (max-width: 1100px) {
+    .game-page-title,
+    .game-area { width: 96vw; }
+    .quick-slot { width: 64px; }
+}

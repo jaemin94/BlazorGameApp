@@ -12,7 +12,7 @@
 
 @implements IAsyncDisposable
 
-<h3>멀티 RPG 테스트</h3>
+<div class="game-page-title">⚔️ MyBlazor RPG</div>
 
 @if (!joined)
 {
@@ -103,15 +103,53 @@ else
             </div>
         }
 
-        <div class="status-box">
-            <div>닉네임: @playerName</div>
-            <div>직업: @GetJobName(myJob)</div>
-            <div>HP: @myHp / @myMaxHp</div>
-            <div>Lv: @myLevel / EXP: @myExp</div>
-            <div>Gold: @myGold</div>
-            <div>공격력: @myAttackPower / 방어력: @myDefense</div>
-            <div>스탯P: @myStatPoint / 스킬P: @mySkillPoint</div>
-            <div>Dash: @(canDash ? "가능" : "쿨타임")</div>
+        <div class="status-box premium-hud">
+            <div class="hud-header">
+                <div class="hud-portrait">
+                    <div class="custom-avatar hud-avatar" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
+                        <div class="avatar-head">
+                            <div class="avatar-hair hair-@myHairStyle"></div>
+                            <span class="avatar-face">@myFaceIcon</span>
+                        </div>
+                        <div class="avatar-body"></div>
+                    </div>
+                </div>
+                <div class="hud-title">
+                    <strong>@playerName</strong>
+                    <span>@GetJobName(myJob) · Lv.@myLevel</span>
+                </div>
+            </div>
+
+            <div class="gauge-row">
+                <span>HP</span>
+                <div class="gauge hp-gauge">
+                    <div class="gauge-fill" style="width:@($"{HpPercent}%")"></div>
+                    <b>@myHp / @myMaxHp</b>
+                </div>
+            </div>
+
+            <div class="gauge-row">
+                <span>EXP</span>
+                <div class="gauge exp-gauge">
+                    <div class="gauge-fill" style="width:@($"{ExpPercent}%")"></div>
+                    <b>@myExp / @ExpRequired</b>
+                </div>
+            </div>
+
+            <div class="hud-stats">
+                <div>💰 @myGold</div>
+                <div>⚔️ @myAttackPower</div>
+                <div>🛡️ @myDefense</div>
+                <div>📌 S:@myStatPoint / K:@mySkillPoint</div>
+            </div>
+        </div>
+
+        <div class="mini-map">
+            <div class="mini-title">@GetMapName(myCurrentMap)</div>
+            <div class="mini-grid">
+                <span class="mini-player" style="left:@($"{Math.Clamp(myX / 10, 5, 95)}%"); top:@($"{Math.Clamp(myY / 6.5, 5, 95)}%")"></span>
+            </div>
+            <div class="mini-help">Z 상호작용 · I 가방 · K 스킬 · C 외형</div>
         </div>
 
         <div class="player @(isDashing ? "dash-effect" : "")" style="left:@($"{myX}px"); top:@($"{myY}px");">
@@ -400,7 +438,7 @@ else
         <div class="quick-slot-bar">
             @foreach (var slot in mySkillSlots.OrderBy(s => s.Slot))
             {
-                <div class="quick-slot">
+                <div class="quick-slot @(string.IsNullOrWhiteSpace(slot.SkillId) ? "empty-quick" : "filled-quick")">
                     <strong>@slot.Slot</strong>
                     <span>@(string.IsNullOrWhiteSpace(slot.SkillId) ? "빈 슬롯" : SkillDatabase.GetName(slot.SkillId))</span>
                     @if (GetCooldownLeft(slot.Slot) > 0)
@@ -441,6 +479,9 @@ else
     private int myLevel = 1;
     private int myExp = 0;
     private int myGold = 0;
+    private int ExpRequired => Math.Max(1, myLevel * 30);
+    private int HpPercent => myMaxHp <= 0 ? 0 : Math.Clamp((int)Math.Round(myHp * 100.0 / myMaxHp), 0, 100);
+    private int ExpPercent => ExpRequired <= 0 ? 0 : Math.Clamp((int)Math.Round(myExp * 100.0 / ExpRequired), 0, 100);
     private int myStr = 1;
     private int myDef = 1;
     private int myInt = 1;
