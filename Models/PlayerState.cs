@@ -1,66 +1,96 @@
 namespace MyBlazorApp.Models;
 
-// 플레이어 전체 상태
 public class PlayerState
 {
-    // 접속 / 방 정보
+    // ==============================
+    // 접속 / 위치
+    // ==============================
     public string ConnectionId { get; set; } = "";
     public string Name { get; set; } = "";
     public string RoomCode { get; set; } = "";
-
-    // 현재 맵 / 위치
     public MapType CurrentMap { get; set; } = MapType.Town;
+
     public int X { get; set; } = 250;
     public int Y { get; set; } = 250;
 
+    // ==============================
     // 기본 능력치
+    // ==============================
     public int Hp { get; set; } = 100;
     public int MaxHp { get; set; } = 100;
+
     public int Level { get; set; } = 1;
     public int Exp { get; set; } = 0;
     public int Gold { get; set; } = 0;
 
-    // 스탯
     public int Str { get; set; } = 1;
     public int Def { get; set; } = 1;
     public int Int { get; set; } = 1;
     public int StatPoint { get; set; } = 0;
 
-    // 기본 공격력 / 방어력
     public int BaseAttackPower { get; set; } = 10;
     public int BaseDefense { get; set; } = 0;
 
-    // 장비
+    // ==============================
+    // 직업 / 스킬
+    // ==============================
+    public JobType Job { get; set; } = JobType.Beginner;
+    public bool IsJobChanged => Job != JobType.Beginner;
+
+    // 전직 전에는 스킬포인트를 주지 않음.
+    // 전직 시 +1, 전직 이후 레벨업마다 +1.
+    public int SkillPoint { get; set; } = 0;
+
+    // 처음에는 기본 스킬만 보유
+    public List<PlayerSkillState> LearnedSkills { get; set; } = new()
+    {
+        new PlayerSkillState
+        {
+            SkillId = "basic_strike",
+            Level = 1,
+            MaxLevel = 1
+        }
+    };
+
+    // 퀵슬롯은 비워둔다. 플레이어가 직접 등록.
+    public List<SkillSlot> SkillSlots { get; set; } = new();
+
+    // ==============================
+    // 장비 / 인벤토리
+    // ==============================
     public EquipmentItem? Weapon { get; set; }
     public EquipmentItem? Armor { get; set; }
+    public List<InventoryItem> Inventory { get; set; } = new();
 
-    // 처치 수
+    // ==============================
+    // 처치 카운트
+    // ==============================
     public int SlimeKillCount { get; set; } = 0;
     public int BatKillCount { get; set; } = 0;
     public int GoblinKillCount { get; set; } = 0;
     public int BossKillCount { get; set; } = 0;
 
-    // 구버전 단일 퀘스트 호환용
+    // ==============================
+    // 기존 상인 퀘스트 호환용
+    // ==============================
     public bool QuestAccepted { get; set; } = false;
     public bool QuestCompleted { get; set; } = false;
     public bool QuestRewardReceived { get; set; } = false;
 
-    // 신버전 다중 퀘스트
     public List<PlayerQuestState> Quests { get; set; } = new();
 
-    // 인벤토리
-    public List<InventoryItem> Inventory { get; set; } = new();
-
-    // 퀵슬롯
-    public List<SkillSlot> SkillSlots { get; set; } = new()
-    {
-        new SkillSlot { Slot = 1, SkillName = "파이어볼", CooldownSeconds = 2 },
-        new SkillSlot { Slot = 2, SkillName = "힐", CooldownSeconds = 5 },
-        new SkillSlot { Slot = 3, SkillName = "회전베기", CooldownSeconds = 3 }
-    };
-
+    // ==============================
     // 계산 능력치
-    public int AttackPower => BaseAttackPower + Str * 2 + (Weapon?.AttackBonus ?? 0);
-    public int Defense => BaseDefense + Def + (Armor?.DefenseBonus ?? 0);
-    public int HealPower => 30 + Int * 5;
+    // ==============================
+    public int AttackPower =>
+        BaseAttackPower + Str * 2 + (Weapon?.AttackBonus ?? 0);
+
+    public int Defense =>
+        BaseDefense + Def + (Armor?.DefenseBonus ?? 0);
+
+    public int MagicPower =>
+        Int * 3;
+
+    public int HealPower =>
+        30 + Int * 5;
 }

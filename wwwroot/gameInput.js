@@ -1,5 +1,3 @@
-// wwwroot/gameInput.js
-// 방향키, 공격, 대쉬, 스킬, 창 열기 키 입력 처리
 window.gameInput = {
     init: function (dotNetRef) {
         if (window.gameInputInitialized) {
@@ -26,8 +24,16 @@ window.gameInput = {
 
             const allowedKeys = [
                 "1", "2", "3", "4", "5", "6", "7", "8", "9",
-                "i", "I", "k", "K", "s", "S", "e", "E", "z", "Z",
-                "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"
+                "i", "I",
+                "k", "K",
+                "s", "S",
+                "e", "E",
+                "j", "J",
+                "z", "Z",
+                "ArrowUp",
+                "ArrowDown",
+                "ArrowLeft",
+                "ArrowRight"
             ];
 
             if (allowedKeys.includes(key)) {

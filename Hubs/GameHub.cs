@@ -3,7 +3,7 @@ using MyBlazorApp.Models;
 
 namespace MyBlazorApp.Hubs;
 
-// 서버에서 플레이어, 몬스터, 드랍, 퀘스트를 관리하는 SignalR Hub
+// 서버에서 플레이어, 몬스터, 드랍, 퀘스트, 전직, 스킬을 관리하는 SignalR Hub
 public class GameHub : Hub
 {
     // 접속자 목록
@@ -62,13 +62,11 @@ public class GameHub : Hub
         }
     };
 
-    // 방+맵을 하나의 키로 변환
-    private static string MapKey(string roomCode, MapType map)
-    {
-        return $"{roomCode}_{map}";
-    }
+    private static string MapKey(string roomCode, MapType map) => $"{roomCode}_{map}";
 
+    // ==============================
     // 게임 입장
+    // ==============================
     public async Task JoinGame(string roomCode, string playerName)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
@@ -97,7 +95,44 @@ public class GameHub : Hub
         await SendMapState(roomCode, MapType.Town);
     }
 
+    // ==============================
+    // 전직
+    // 8레벨: 마법사
+    // 10레벨: 전사/도적/궁수
+    // 전직 성공 시 스킬포인트 +1
+    // ==============================
+    public async Task ChangeJob(JobType job)
+    {
+        if (!Players.TryGetValue(Context.ConnectionId, out var player))
+            return;
+
+        if (player.Job != JobType.Beginner)
+            return;
+
+        if (job == JobType.Mage)
+        {
+            if (player.Level < 8)
+                return;
+        }
+        else if (job == JobType.Warrior || job == JobType.Thief || job == JobType.Archer)
+        {
+            if (player.Level < 10)
+                return;
+        }
+        else
+        {
+            return;
+        }
+
+        player.Job = job;
+        player.SkillPoint += 1;
+
+        await SendRoomState(player.RoomCode);
+    }
+
+    // ==============================
     // 맵 이동
+    // ==============================
     public async Task ChangeMap(MapType targetMap, int targetX, int targetY)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
@@ -120,7 +155,6 @@ public class GameHub : Hub
         await SendMapState(player.RoomCode, targetMap);
     }
 
-    // 플레이어 위치 동기화
     public async Task MovePlayer(int x, int y)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
@@ -132,7 +166,9 @@ public class GameHub : Hub
         await SendRoomState(player.RoomCode);
     }
 
+    // ==============================
     // 기본 공격
+    // ==============================
     public async Task AttackMonster()
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
@@ -159,75 +195,178 @@ public class GameHub : Hub
         await SendMapState(player.RoomCode, player.CurrentMap);
     }
 
-    // 파이어볼
-    public async Task CastFireball(int x, int y)
+    // ==============================
+    // 스킬 배우기 / 스킬 레벨업
+    // 전직 이후부터 가능
+    // 최대 레벨 10
+    // ==============================
+    public async Task LearnOrLevelUpSkill(string skillId)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
             return;
 
-        var monsters = GetRoomMonsters(player.RoomCode, player.CurrentMap);
+        if (!player.IsJobChanged)
+            return;
 
-        foreach (var monster in monsters.ToList())
+        if (player.SkillPoint <= 0)
+            return;
+
+        var skill = SkillDatabase.GetSkill(skillId);
+        if (skill == null)
+            return;
+
+        if (skill.RequiredJob != player.Job)
+            return;
+
+        if (player.Level < skill.RequiredLevel)
+            return;
+
+        var learned = player.LearnedSkills.FirstOrDefault(s => s.SkillId == skillId);
+
+        if (learned == null)
         {
-            if (GetDistance(x, y, monster.X, monster.Y) <= 180)
+            player.LearnedSkills.Add(new PlayerSkillState
             {
-                monster.Hp -= player.AttackPower + 10 + player.Int * 3;
+                SkillId = skillId,
+                Level = 1,
+                MaxLevel = skill.MaxLevel
+            });
 
-                if (monster.Hp <= 0)
-                    KillMonster(player, monsters, monster);
-            }
+            player.SkillPoint--;
         }
+        else
+        {
+            if (learned.Level >= skill.MaxLevel)
+                return;
+
+            learned.Level++;
+            player.SkillPoint--;
+        }
+
+        await SendRoomState(player.RoomCode);
+    }
+
+    // ==============================
+    // 퀵슬롯 등록
+    // 배운 스킬만 등록 가능
+    // ==============================
+    public async Task SetSkillSlot(int slot, string skillId)
+    {
+        if (!Players.TryGetValue(Context.ConnectionId, out var player))
+            return;
+
+        if (slot < 1 || slot > 9)
+            return;
+
+        if (!player.LearnedSkills.Any(s => s.SkillId == skillId))
+            return;
+
+        var targetSlot = player.SkillSlots.FirstOrDefault(s => s.Slot == slot);
+        if (targetSlot == null)
+        {
+            targetSlot = new SkillSlot { Slot = slot };
+            player.SkillSlots.Add(targetSlot);
+        }
+
+        targetSlot.SkillId = skillId;
+
+        await SendRoomState(player.RoomCode);
+    }
+
+    // ==============================
+    // 퀵슬롯 번호로 스킬 사용
+    // ==============================
+    public async Task UseSkillFromSlot(int slot)
+    {
+        if (!Players.TryGetValue(Context.ConnectionId, out var player))
+            return;
+
+        var slotInfo = player.SkillSlots.FirstOrDefault(s => s.Slot == slot);
+        if (slotInfo == null || string.IsNullOrWhiteSpace(slotInfo.SkillId))
+            return;
+
+        var learned = player.LearnedSkills.FirstOrDefault(s => s.SkillId == slotInfo.SkillId);
+        if (learned == null)
+            return;
+
+        var skill = SkillDatabase.GetSkill(slotInfo.SkillId);
+        if (skill == null)
+            return;
+
+        if (skill.SkillId == "basic_strike")
+            UseDamageSkill(player, skill, learned.Level, 90, false);
+        else if (skill.SkillId == "mage_fireball")
+            UseDamageSkill(player, skill, learned.Level, skill.GetRange(learned.Level), true);
+        else if (skill.SkillId == "mage_heal")
+            UseHealSkill(player, learned.Level);
+        else if (skill.SkillId == "warrior_spin")
+            UseDamageSkill(player, skill, learned.Level, skill.GetRange(learned.Level), true);
+        else if (skill.SkillId == "thief_double_slash")
+            UseDamageSkill(player, skill, learned.Level, skill.GetRange(learned.Level), false);
+        else if (skill.SkillId == "archer_power_shot")
+            UseDamageSkill(player, skill, learned.Level, skill.GetRange(learned.Level), true);
 
         await SendRoomState(player.RoomCode);
         await SendMapState(player.RoomCode, player.CurrentMap);
     }
 
-    // 회전베기
-    public async Task SpinAttack()
+    private static void UseDamageSkill(PlayerState player, SkillDefinition skill, int skillLevel, int range, bool multipleTarget)
     {
-        if (!Players.TryGetValue(Context.ConnectionId, out var player))
-            return;
-
         var monsters = GetRoomMonsters(player.RoomCode, player.CurrentMap);
 
-        foreach (var monster in monsters.ToList())
+        int targetCount = skill.GetTargetCount(skillLevel);
+        int hitCount = skill.GetHitCount(skillLevel);
+        int damage = skill.GetDamage(skillLevel) + player.AttackPower;
+
+        if (player.Job == JobType.Mage)
+            damage += player.MagicPower;
+
+        var targets = monsters
+            .Where(m => GetDistance(player.X, player.Y, m.X, m.Y) <= range)
+            .OrderBy(m => GetDistance(player.X, player.Y, m.X, m.Y))
+            .Take(multipleTarget ? targetCount : 1)
+            .ToList();
+
+        foreach (var monster in targets)
         {
-            if (GetDistance(player.X, player.Y, monster.X, monster.Y) <= 120)
+            for (int i = 0; i < hitCount; i++)
             {
-                monster.Hp -= player.AttackPower + 8;
+                monster.Hp -= damage;
 
                 if (monster.Hp <= 0)
+                {
                     KillMonster(player, monsters, monster);
+                    break;
+                }
             }
         }
-
-        await SendRoomState(player.RoomCode);
-        await SendMapState(player.RoomCode, player.CurrentMap);
     }
 
-    // 힐
+    private static void UseHealSkill(PlayerState player, int skillLevel)
+    {
+        int healAmount = player.HealPower + 20 + skillLevel * 12;
+        player.Hp = Math.Min(player.MaxHp, player.Hp + healAmount);
+    }
+
+    // 예전 Game.razor와의 호환용. 새 Game.razor는 UseSkillFromSlot을 사용함.
     public async Task HealPlayer()
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
             return;
 
-        if (player.Hp >= player.MaxHp)
-            return;
-
-        player.Hp += player.HealPower;
-        player.Hp = Math.Min(player.Hp, player.MaxHp);
-
+        player.Hp = Math.Min(player.MaxHp, player.Hp + player.HealPower);
         await SendRoomState(player.RoomCode);
     }
 
-    // 포션 구매
+    // ==============================
+    // 상점 / 인벤 / 장비
+    // ==============================
     public async Task BuyPotion()
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
             return;
 
         const int price = 20;
-
         if (player.Gold < price)
             return;
 
@@ -237,14 +376,12 @@ public class GameHub : Hub
         await SendRoomState(player.RoomCode);
     }
 
-    // 인벤토리 아이템 사용
     public async Task UseInventoryItem(string itemName)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
             return;
 
         var item = player.Inventory.FirstOrDefault(i => i.Name == itemName);
-
         if (item == null || item.Count <= 0)
             return;
 
@@ -254,8 +391,7 @@ public class GameHub : Hub
                 return;
 
             item.Count--;
-            player.Hp += 40;
-            player.Hp = Math.Min(player.Hp, player.MaxHp);
+            player.Hp = Math.Min(player.MaxHp, player.Hp + 40);
 
             if (item.Count <= 0)
                 player.Inventory.Remove(item);
@@ -264,14 +400,12 @@ public class GameHub : Hub
         await SendRoomState(player.RoomCode);
     }
 
-    // 장비 장착
     public async Task EquipItem(string itemName)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
             return;
 
         var item = player.Inventory.FirstOrDefault(i => i.Name == itemName);
-
         if (item == null)
             return;
 
@@ -301,7 +435,6 @@ public class GameHub : Hub
         await SendRoomState(player.RoomCode);
     }
 
-    // 장비 해제
     public async Task UnequipItem(string equipmentType)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
@@ -315,7 +448,6 @@ public class GameHub : Hub
         await SendRoomState(player.RoomCode);
     }
 
-    // 스탯 찍기
     public async Task AddStat(string statName)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
@@ -330,30 +462,26 @@ public class GameHub : Hub
         else return;
 
         player.StatPoint--;
-
         await SendRoomState(player.RoomCode);
     }
 
-    // 퀘스트 받기
+    // ==============================
+    // 퀘스트
+    // ==============================
     public async Task AcceptQuest(string questId)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
             return;
 
         var quest = QuestDefinitions.FirstOrDefault(q => q.QuestId == questId);
-
         if (quest == null)
             return;
 
         if (player.Quests.Any(q => q.QuestId == questId))
             return;
 
-        player.Quests.Add(new PlayerQuestState
-        {
-            QuestId = questId
-        });
+        player.Quests.Add(new PlayerQuestState { QuestId = questId });
 
-        // 기존 상인 퀘스트 호환
         if (questId == "merchant_slime")
         {
             player.QuestAccepted = true;
@@ -364,7 +492,6 @@ public class GameHub : Hub
         await SendRoomState(player.RoomCode);
     }
 
-    // 퀘스트 보상 받기
     public async Task ReceiveQuestReward(string questId)
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
@@ -384,15 +511,7 @@ public class GameHub : Hub
 
         if (!string.IsNullOrWhiteSpace(quest.RewardItemName))
         {
-            AddItem(
-                player,
-                quest.RewardItemName,
-                1,
-                quest.RewardItemType,
-                quest.RewardAttackBonus,
-                quest.RewardDefenseBonus,
-                quest.RewardRarity
-            );
+            AddItem(player, quest.RewardItemName, 1, quest.RewardItemType, quest.RewardAttackBonus, quest.RewardDefenseBonus, quest.RewardRarity);
         }
 
         playerQuest.RewardReceived = true;
@@ -403,53 +522,21 @@ public class GameHub : Hub
         await SendRoomState(player.RoomCode);
     }
 
-    // 스킬 퀵슬롯 변경
-    public async Task SetSkillSlot(int slot, string skillName)
-    {
-        if (!Players.TryGetValue(Context.ConnectionId, out var player))
-            return;
-
-        var skillSlot = player.SkillSlots.FirstOrDefault(s => s.Slot == slot);
-
-        if (skillSlot == null)
-        {
-            skillSlot = new SkillSlot { Slot = slot };
-            player.SkillSlots.Add(skillSlot);
-        }
-
-        skillSlot.SkillName = skillName;
-        skillSlot.CooldownSeconds = skillName switch
-        {
-            "파이어볼" => 2,
-            "힐" => 5,
-            "회전베기" => 3,
-            _ => 1
-        };
-
-        await SendRoomState(player.RoomCode);
-    }
-
-    // 아이템 줍기
     public async Task PickupItem()
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player))
             return;
 
         var drops = GetRoomDrops(player.RoomCode, player.CurrentMap);
-
         var item = drops.FirstOrDefault(d => GetDistance(player.X, player.Y, d.X, d.Y) <= 80);
 
         if (item == null)
             return;
 
         if (item.IsGold)
-        {
             player.Gold += item.GoldAmount;
-        }
         else
-        {
             AddItem(player, item.Name, 1, item.ItemType, item.AttackBonus, item.DefenseBonus, item.Rarity);
-        }
 
         drops.Remove(item);
 
@@ -457,7 +544,9 @@ public class GameHub : Hub
         await SendMapState(player.RoomCode, player.CurrentMap);
     }
 
-    // 몬스터 AI 갱신
+    // ==============================
+    // 몬스터 AI
+    // ==============================
     public async Task UpdateMonsters()
     {
         foreach (var playerGroup in Players.Values.GroupBy(p => new { p.RoomCode, p.CurrentMap }))
@@ -482,7 +571,6 @@ public class GameHub : Hub
 
                 double distance = GetDistance(monster.X, monster.Y, target.X, target.Y);
 
-                // 공격 범위
                 if (distance <= 70)
                 {
                     if ((DateTime.Now - monster.LastAttackTime).TotalMilliseconds >= 1000)
@@ -491,7 +579,6 @@ public class GameHub : Hub
                         target.Hp -= damage;
                         monster.LastAttackTime = DateTime.Now;
 
-                        // 사망 시 마을 귀환
                         if (target.Hp <= 0)
                         {
                             target.Hp = target.MaxHp;
@@ -512,7 +599,6 @@ public class GameHub : Hub
         }
     }
 
-    // 연결 종료
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         if (Players.TryGetValue(Context.ConnectionId, out var player))
@@ -525,7 +611,6 @@ public class GameHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    // 몬스터가 플레이어를 따라가되 벽이면 우회
     private static void MoveMonsterTowardTarget(MonsterState monster, PlayerState target)
     {
         const int speed = 4;
@@ -583,7 +668,6 @@ public class GameHub : Hub
         }
     }
 
-    // 퀘스트 진행도 증가
     private static void UpdateQuestProgress(PlayerState player, MonsterType killedType)
     {
         foreach (var playerQuest in player.Quests)
@@ -592,11 +676,7 @@ public class GameHub : Hub
                 continue;
 
             var quest = QuestDefinitions.FirstOrDefault(q => q.QuestId == playerQuest.QuestId);
-
-            if (quest == null)
-                continue;
-
-            if (quest.TargetMonsterType != killedType)
+            if (quest == null || quest.TargetMonsterType != killedType)
                 continue;
 
             playerQuest.CurrentCount++;
@@ -612,7 +692,6 @@ public class GameHub : Hub
         }
     }
 
-    // 몬스터 처치 처리
     private static void KillMonster(PlayerState player, List<MonsterState> monsters, MonsterState monster)
     {
         monsters.Remove(monster);
@@ -631,7 +710,6 @@ public class GameHub : Hub
         monsters.Add(CreateMonster(player.Level, player.CurrentMap));
     }
 
-    // 경험치 / 레벨업 처리
     private static void AddExp(PlayerState player, int exp)
     {
         player.Exp += exp;
@@ -643,10 +721,13 @@ public class GameHub : Hub
             player.MaxHp += 20;
             player.Hp = player.MaxHp;
             player.StatPoint += 3;
+
+            // 전직 이후부터 레벨업마다 스킬포인트 +1
+            if (player.IsJobChanged)
+                player.SkillPoint += 1;
         }
     }
 
-    // 드랍 생성
     private static void CreateDrop(string roomCode, MapType map, int x, int y, MonsterType monsterType)
     {
         var drops = GetRoomDrops(roomCode, map);
@@ -690,15 +771,7 @@ public class GameHub : Hub
             drops.Add(new DroppedItem { Name = "Gold", GoldAmount = Random.Shared.Next(10, 31), X = x, Y = y });
     }
 
-    // 아이템 지급
-    private static void AddItem(
-        PlayerState player,
-        string itemName,
-        int count,
-        string itemType = "Material",
-        int attackBonus = 0,
-        int defenseBonus = 0,
-        string rarity = "Normal")
+    private static void AddItem(PlayerState player, string itemName, int count, string itemType = "Material", int attackBonus = 0, int defenseBonus = 0, string rarity = "Normal")
     {
         var item = player.Inventory.FirstOrDefault(i =>
             i.Name == itemName &&
@@ -725,7 +798,6 @@ public class GameHub : Hub
         }
     }
 
-    // 맵 초기화
     private static void EnsureMap(string roomCode, MapType map, int playerLevel)
     {
         var monsterKey = MapKey(roomCode, map);
@@ -750,7 +822,6 @@ public class GameHub : Hub
         }
     }
 
-    // 몬스터 생성
     private static MonsterState CreateMonster(int playerLevel, MapType map)
     {
         if (map == MapType.BossRoom)
@@ -823,16 +894,11 @@ public class GameHub : Hub
         };
     }
 
-    // 플레이어 상태 전송
     private async Task SendRoomState(string roomCode)
     {
-        await Clients.Group(roomCode).SendAsync(
-            "UpdatePlayers",
-            Players.Values.Where(p => p.RoomCode == roomCode).ToList()
-        );
+        await Clients.Group(roomCode).SendAsync("UpdatePlayers", Players.Values.Where(p => p.RoomCode == roomCode).ToList());
     }
 
-    // 맵 상태 전송
     private async Task SendMapState(string roomCode, MapType map)
     {
         await Clients.Group(MapKey(roomCode, map)).SendAsync("UpdateMonsters", GetRoomMonsters(roomCode, map));
@@ -842,20 +908,16 @@ public class GameHub : Hub
     private static List<MonsterState> GetRoomMonsters(string roomCode, MapType map)
     {
         var key = MapKey(roomCode, map);
-
         if (!RoomMonsters.ContainsKey(key))
             RoomMonsters[key] = new List<MonsterState>();
-
         return RoomMonsters[key];
     }
 
     private static List<DroppedItem> GetRoomDrops(string roomCode, MapType map)
     {
         var key = MapKey(roomCode, map);
-
         if (!RoomDrops.ContainsKey(key))
             RoomDrops[key] = new List<DroppedItem>();
-
         return RoomDrops[key];
     }
 
@@ -864,7 +926,6 @@ public class GameHub : Hub
         return Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
     }
 
-    // 서버 몬스터 벽 충돌 체크
     private static bool IsBlockedTile(int x, int y)
     {
         if (x < 24 || x > 976 || y < 24 || y > 626)
@@ -873,11 +934,9 @@ public class GameHub : Hub
         int tileX = x / 50;
         int tileY = y / 50;
 
-        // 외곽 벽
         if (tileX <= 0 || tileX >= 19 || tileY <= 0 || tileY >= 12)
             return true;
 
-        // 물가 / 장애물 예시
         if (tileY == 2 && tileX >= 4 && tileX <= 8)
             return true;
 

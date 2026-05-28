@@ -1,3 +1,10 @@
+C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.csproj.AssemblyReference.cache
+C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.AssemblyInfoInputs.cache
+C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.AssemblyInfo.cs
+C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.csproj.CoreCompileInputs.cache
+C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.sourcelink.json
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\bin\Debug\net8.0\appsettings.json
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\bin\Debug\net8.0\BlazorApp.staticwebassets.runtime.json
@@ -9,12 +16,6 @@ C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\bin\Debug\net8.0\BlazorApp.pdb
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\bin\Debug\net8.0\Microsoft.AspNetCore.Http.Connections.Client.dll
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\bin\Debug\net8.0\Microsoft.AspNetCore.SignalR.Client.dll
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\bin\Debug\net8.0\Microsoft.AspNetCore.SignalR.Client.Core.dll
-C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.csproj.AssemblyReference.cache
-C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.AssemblyInfoInputs.cache
-C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.AssemblyInfo.cs
-C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.csproj.CoreCompileInputs.cache
-C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\BlazorApp.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\LEEJAEMIN\Desktop\개발관련\BlazorApp\obj\Debug\net8.0\staticwebassets\msbuild.BlazorApp.Microsoft.AspNetCore.StaticWebAssets.props
