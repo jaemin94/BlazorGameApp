@@ -1,0 +1,1200 @@
+@page "/game"
+@using Microsoft.AspNetCore.SignalR.Client
+@using MyBlazorApp.Models
+@using MyBlazorApp.Services
+@using Microsoft.JSInterop
+@rendermode InteractiveServer
+
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject GameInputService InputService
+@inject GameSkillService SkillService
+@inject GameAiService AiService
+
+@implements IAsyncDisposable
+
+<h3>멀티 RPG 테스트</h3>
+
+@if (!joined)
+{
+    <div class="join-box">
+        <input @bind="playerName" placeholder="닉네임" />
+        <input @bind="roomCode" placeholder="방 코드" />
+        <button @onclick="JoinGame">입장</button>
+    </div>
+}
+else
+{
+    <div class="game-area">
+
+        <!-- 맵 타일 -->
+        <div class="tile-map">
+            @for (int y = 0; y < 13; y++)
+            {
+                @for (int x = 0; x < 20; x++)
+                {
+                    <div class="@GetTileClass(x, y)"></div>
+                }
+            }
+        </div>
+
+        <!-- 현재 맵 이름 -->
+        <div class="map-name">현재 맵: @GetMapName(myCurrentMap)</div>
+
+        <!-- 포탈 -->
+        @foreach (var portal in portals.Where(p => p.FromMap == myCurrentMap))
+        {
+            <div class="portal" style="left:@($"{portal.X}px"); top:@($"{portal.Y}px");">
+                🌀
+                <div>@portal.Name</div>
+            </div>
+        }
+
+        <!-- 포탈 확인창 -->
+        @if (showPortalConfirm && selectedPortal != null)
+        {
+            <div class="portal-confirm">
+                <h4>포탈 이동</h4>
+                <p>@selectedPortal.Message</p>
+
+                <div class="portal-buttons">
+                    <button @onclick="ConfirmPortalMove">예</button>
+                    <button @onclick="CancelPortalMove">아니오</button>
+                </div>
+            </div>
+        }
+
+        <!-- NPC / 상점 / 퀘스트 창 -->
+        @if (showShop && selectedNpc != null)
+        {
+            <div class="shop-box quest-box">
+                <h4>@selectedNpc.Name</h4>
+                <p>@selectedNpc.Message</p>
+
+                @{
+                    var quest = questDefinitions.FirstOrDefault(q => q.QuestId == selectedNpc.QuestId);
+                    var myQuest = myQuests.FirstOrDefault(q => q.QuestId == selectedNpc.QuestId);
+                }
+
+                @if (quest != null)
+                {
+                    <div class="quest-panel">
+                        <strong>@quest.QuestName</strong>
+                        <p>@quest.Description</p>
+
+                        @if (myQuest == null)
+                        {
+                            <button @onclick="async () => await AcceptQuest(quest.QuestId)">퀘스트 받기</button>
+                        }
+                        else if (myQuest.Completed && !myQuest.RewardReceived)
+                        {
+                            <button @onclick="async () => await ReceiveQuestReward(quest.QuestId)">보상 받기</button>
+                        }
+                        else if (myQuest.RewardReceived)
+                        {
+                            <span class="quest-complete">완료됨</span>
+                        }
+                        else
+                        {
+                            <span>@myQuest.CurrentCount / @quest.RequiredCount</span>
+                        }
+                    </div>
+                }
+
+                @if (selectedNpc.Name == "상인")
+                {
+                    <button @onclick="BuyPotion">작은 포션 구매 - 20 Gold</button>
+                }
+
+                <button @onclick="CloseShop">닫기</button>
+            </div>
+        }
+
+        <!-- 장비창 -->
+        @if (showEquipmentWindow)
+        {
+            <div class="equipment-window">
+                <h4>장비창</h4>
+
+                <div class="equipment-slot">
+                    <strong>무기</strong>
+                    @if (myWeapon == null)
+                    {
+                        <span>없음</span>
+                    }
+                    else
+                    {
+                        <span>@myWeapon.Name</span>
+                        <small>공격력 +@myWeapon.AttackBonus</small>
+                        <button @onclick='async () => await UnequipItem("Weapon")'>해제</button>
+                    }
+                </div>
+
+                <div class="equipment-slot">
+                    <strong>방어구</strong>
+                    @if (myArmor == null)
+                    {
+                        <span>없음</span>
+                    }
+                    else
+                    {
+                        <span>@myArmor.Name</span>
+                        <small>방어력 +@myArmor.DefenseBonus</small>
+                        <button @onclick='async () => await UnequipItem("Armor")'>해제</button>
+                    }
+                </div>
+
+                <hr />
+
+                <div>공격력: @myAttackPower</div>
+                <div>방어력: @myDefense</div>
+                <p>E 키로 닫기</p>
+            </div>
+        }
+
+        <!-- NPC -->
+        @foreach (var npc in npcs.Where(n => myCurrentMap == MapType.Town))
+        {
+            <div class="npc" style="left:@($"{npc.X}px"); top:@($"{npc.Y}px");">
+                <div class="name">@npc.Name</div>
+                <img src="/images/npc/shopkeeper.png" class="npc-img" />
+            </div>
+        }
+
+        <!-- 하단 대화 -->
+        @if (showNpcDialog)
+        {
+            <div class="npc-dialog">@npcMessage</div>
+        }
+
+        <!-- 상태창 -->
+        <div class="status-box">
+            <div>닉네임: @playerName</div>
+            <div>HP: @myHp / @myMaxHp</div>
+            <div>Lv: @myLevel</div>
+            <div>EXP: @myExp</div>
+            <div>Gold: @myGold</div>
+            <div>공격력: @myAttackPower</div>
+            <div>방어력: @myDefense</div>
+            <div>Dash: @(canDash ? "가능" : "쿨타임")</div>
+            <div>Quest: @GetQuestText()</div>
+        </div>
+
+        <!-- 내 캐릭터 -->
+        <div class="player @(isDashing ? "dash-effect" : "")" style="left:@($"{myX}px"); top:@($"{myY}px");">
+            <div class="name">@playerName</div>
+            <img src="@playerImage" class="player-img" />
+        </div>
+
+        <!-- 다른 플레이어 -->
+        @foreach (var player in players.Where(p => p.Name != playerName && p.CurrentMap == myCurrentMap))
+        {
+            <div class="player" style="left:@($"{player.X}px"); top:@($"{player.Y}px");">
+                <div class="name">@player.Name</div>
+                <img src="/images/player/down.png" class="player-img" />
+            </div>
+        }
+
+        <!-- 몬스터 -->
+        @foreach (var monster in monsters)
+        {
+            <div class="monster" style="left:@($"{monster.X}px"); top:@($"{monster.Y}px");">
+                <img src="@GetMonsterImage(monster.Type)" class="monster-img" />
+                <div class="monster-name">@monster.Name</div>
+                <div class="monster-hp">HP: @monster.Hp / @monster.MaxHp</div>
+            </div>
+        }
+
+        <!-- 드랍 아이템 -->
+        @foreach (var item in droppedItems)
+        {
+            <div class="drop-item" style="left:@($"{item.X}px"); top:@($"{item.Y}px");">
+                @if (item.IsGold)
+                {
+                    <div class="drop-gold">💰 @item.GoldAmount</div>
+                }
+                else
+                {
+                    <div class="drop-loot rarity-@item.Rarity.ToLower()">📦 @item.Name</div>
+                }
+            </div>
+        }
+
+        <!-- 인벤토리 -->
+        @if (showInventory)
+        {
+            <div class="inventory-box">
+                <h4>인벤토리</h4>
+
+                @if (myInventory.Count == 0)
+                {
+                    <p>아이템 없음</p>
+                }
+                else
+                {
+                    @foreach (var item in myInventory)
+                    {
+                        var currentItemName = item.Name;
+
+                        <div class="inventory-item rarity-@item.Rarity.ToLower()">
+                            <div>
+                                <strong>@item.Name</strong>
+                                <span>x @item.Count</span>
+
+                                @if (item.ItemType == "Weapon")
+                                {
+                                    <small>무기 / 공격력 +@item.AttackBonus</small>
+                                }
+                                else if (item.ItemType == "Armor")
+                                {
+                                    <small>방어구 / 방어력 +@item.DefenseBonus</small>
+                                }
+                                else
+                                {
+                                    <small>@item.ItemType</small>
+                                }
+                            </div>
+
+                            @if (item.Name == "작은 포션")
+                            {
+                                <button @onclick="async () => await UseInventoryItem(currentItemName)">사용</button>
+                            }
+                            else if (item.ItemType == "Weapon" || item.ItemType == "Armor")
+                            {
+                                <button @onclick="async () => await EquipItem(currentItemName)">장착</button>
+                            }
+                        </div>
+                    }
+                }
+
+                <p class="inventory-help">I 키로 닫기</p>
+            </div>
+        }
+
+        <!-- 캐릭터 창 -->
+        @if (showCharacterWindow)
+        {
+            <div class="character-window">
+                <h4>캐릭터</h4>
+
+                <div>Lv: @myLevel</div>
+                <div>HP: @myHp / @myMaxHp</div>
+                <div>공격력: @myAttackPower</div>
+                <div>방어력: @myDefense</div>
+                <div>스탯포인트: @myStatPoint</div>
+
+                <hr />
+
+                <div>무기: @(myWeapon?.Name ?? "없음")</div>
+                <div>방어구: @(myArmor?.Name ?? "없음")</div>
+
+                <hr />
+
+                <div class="stat-row">
+                    <span>STR: @myStr</span>
+                    <button @onclick='async () => await AddStat("STR")'>+</button>
+                </div>
+
+                <div class="stat-row">
+                    <span>DEF: @myDef</span>
+                    <button @onclick='async () => await AddStat("DEF")'>+</button>
+                </div>
+
+                <div class="stat-row">
+                    <span>INT: @myInt</span>
+                    <button @onclick='async () => await AddStat("INT")'>+</button>
+                </div>
+
+                <p>S 키로 닫기</p>
+            </div>
+        }
+
+        <!-- 스킬창 -->
+        @if (showSkillWindow)
+        {
+            <div class="skill-window">
+                <h4>스킬창</h4>
+                <p class="skill-desc">스킬을 원하는 퀵슬롯에 지정하세요.</p>
+
+                @foreach (var skillName in skillBook)
+                {
+                    <div class="skill-book-item">
+                        <strong>@skillName</strong>
+
+                        <div class="skill-assign-buttons">
+                            <button @onclick='async () => await SetSkillSlot(1, skillName)'>1번</button>
+                            <button @onclick='async () => await SetSkillSlot(2, skillName)'>2번</button>
+                            <button @onclick='async () => await SetSkillSlot(3, skillName)'>3번</button>
+                        </div>
+                    </div>
+                }
+
+                <hr />
+
+                @foreach (var slot in mySkillSlots.OrderBy(s => s.Slot))
+                {
+                    <div class="skill-slot-ui">
+                        <span>@slot.Slot 번</span>
+                        <strong>@slot.SkillName</strong>
+                        <small>쿨타임 @slot.CooldownSeconds 초</small>
+                    </div>
+                }
+
+                <p>K 키로 닫기</p>
+            </div>
+        }
+
+        <!-- 공격 이펙트 -->
+        @if (showAttackEffect)
+        {
+            <div class="attack-effect" style="left:@($"{myX}px"); top:@($"{myY}px");"></div>
+        }
+
+        <!-- 파이어볼 이펙트 -->
+        @if (showFireballEffect)
+        {
+            <div class="fireball-effect" style="left:@($"{fireballX}px"); top:@($"{fireballY}px");">🔥</div>
+        }
+
+        <!-- 회전베기 이펙트 -->
+        @if (showSpinEffect)
+        {
+            <div class="spin-effect" style="left:@($"{myX}px"); top:@($"{myY}px");">⚔️</div>
+        }
+
+        <!-- 퀵슬롯 -->
+        <div class="quick-slot-bar">
+            @foreach (var slot in mySkillSlots.OrderBy(s => s.Slot))
+            {
+                <div class="quick-slot">
+                    <strong>@slot.Slot</strong>
+                    <span>@slot.SkillName</span>
+
+                    @if (GetCooldownLeft(slot.Slot) > 0)
+                    {
+                        <div class="cooldown-cover">@GetCooldownLeft(slot.Slot)</div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    // SignalR / JS
+    private HubConnection? hubConnection;
+    private DotNetObjectReference<object>? dotNetRef;
+
+    // 입장 정보
+    private string playerName = "";
+    private string roomCode = "room1";
+    private bool joined = false;
+
+    // 내 플레이어 상태
+    private string playerImage = "/images/player/down.png";
+    private int myX = 250;
+    private int myY = 300;
+    private int myHp = 100;
+    private int myMaxHp = 100;
+    private int myLevel = 1;
+    private int myExp = 0;
+    private int myGold = 0;
+    private MapType myCurrentMap = MapType.Town;
+
+    // 내 스탯
+    private int myStr = 1;
+    private int myDef = 1;
+    private int myInt = 1;
+    private int myStatPoint = 0;
+    private int myAttackPower = 10;
+    private int myDefense = 0;
+    private int mySlimeKillCount = 0;
+
+    // UI 창 상태
+    private bool showInventory = false;
+    private bool showSkillWindow = false;
+    private bool showCharacterWindow = false;
+    private bool showEquipmentWindow = false;
+    private bool showShop = false;
+    private bool showNpcDialog = false;
+    private bool showPortalConfirm = false;
+
+    // 스킬 / 이펙트 상태
+    private bool canDash = true;
+    private bool isDashing = false;
+    private bool showFireballEffect = false;
+    private bool showAttackEffect = false;
+    private bool showSpinEffect = false;
+    private int fireballX = 0;
+    private int fireballY = 0;
+
+    // 선택 상태
+    private string npcMessage = "";
+    private PortalState? selectedPortal = null;
+    private NpcState? selectedNpc = null;
+
+    // 서버 동기화 리스트
+    private List<PlayerState> players = new();
+    private List<MonsterState> monsters = new();
+    private List<DroppedItem> droppedItems = new();
+    private List<InventoryItem> myInventory = new();
+    private List<SkillSlot> mySkillSlots = new();
+
+    // 장비
+    private EquipmentItem? myWeapon;
+    private EquipmentItem? myArmor;
+
+    // 퀘스트
+    private bool myQuestAccepted = false;
+    private bool myQuestCompleted = false;
+    private bool myQuestRewardReceived = false;
+    private List<PlayerQuestState> myQuests = new();
+
+    // 스킬 쿨타임
+    private Dictionary<int, DateTime> skillCooldownEnds = new();
+
+    // 퀘스트 정의
+    private List<QuestState> questDefinitions = new()
+    {
+        new QuestState
+        {
+            QuestId = "merchant_slime",
+            QuestName = "상인의 부탁",
+            Description = "슬라임 3마리를 처치하세요.",
+            TargetMonsterType = MonsterType.Slime,
+            RequiredCount = 3,
+            RewardGold = 50,
+            RewardExp = 30,
+            RewardItemName = "초보자 검",
+            RewardItemType = "Weapon",
+            RewardAttackBonus = 3,
+            RewardRarity = "Normal"
+        },
+        new QuestState
+        {
+            QuestId = "hunter_goblin",
+            QuestName = "사냥꾼의 의뢰",
+            Description = "고블린 2마리를 처치하세요.",
+            TargetMonsterType = MonsterType.Goblin,
+            RequiredCount = 2,
+            RewardGold = 120,
+            RewardExp = 80,
+            RewardItemName = "고블린 갑옷",
+            RewardItemType = "Armor",
+            RewardDefenseBonus = 8,
+            RewardRarity = "Rare"
+        },
+        new QuestState
+        {
+            QuestId = "boss_clear",
+            QuestName = "보스 토벌",
+            Description = "보스 몬스터 1마리를 처치하세요.",
+            TargetMonsterType = MonsterType.Boss,
+            RequiredCount = 1,
+            RewardGold = 300,
+            RewardExp = 200,
+            RewardItemName = "용사의 검",
+            RewardItemType = "Weapon",
+            RewardAttackBonus = 30,
+            RewardRarity = "Epic"
+        }
+    };
+
+    // 스킬북
+    private List<string> skillBook = new()
+    {
+        "파이어볼",
+        "힐",
+        "회전베기"
+    };
+
+    // 포탈 목록
+    private List<PortalState> portals = new()
+    {
+        new PortalState
+        {
+            Name = "사냥터 입구",
+            FromMap = MapType.Town,
+            ToMap = MapType.Field,
+            X = 850,
+            Y = 300,
+            TargetX = 150,
+            TargetY = 300,
+            Message = "사냥터로 이동할까요?"
+        },
+        new PortalState
+        {
+            Name = "마을 귀환",
+            FromMap = MapType.Field,
+            ToMap = MapType.Town,
+            X = 100,
+            Y = 300,
+            TargetX = 800,
+            TargetY = 300,
+            Message = "마을로 돌아갈까요?"
+        },
+        new PortalState
+        {
+            Name = "보스방 입구",
+            FromMap = MapType.Field,
+            ToMap = MapType.BossRoom,
+            X = 900,
+            Y = 550,
+            TargetX = 150,
+            TargetY = 300,
+            Message = "보스방으로 이동할까요?"
+        },
+        new PortalState
+        {
+            Name = "사냥터 귀환",
+            FromMap = MapType.BossRoom,
+            ToMap = MapType.Field,
+            X = 100,
+            Y = 300,
+            TargetX = 850,
+            TargetY = 500,
+            Message = "사냥터로 돌아갈까요?"
+        }
+    };
+
+    // NPC 목록
+    private List<NpcState> npcs = new()
+    {
+        new NpcState
+        {
+            Name = "상인",
+            X = 500,
+            Y = 300,
+            Message = "어서 와! 슬라임 때문에 장사가 힘들어.",
+            QuestId = "merchant_slime"
+        },
+        new NpcState
+        {
+            Name = "사냥꾼",
+            X = 650,
+            Y = 300,
+            Message = "고블린을 조심해. 꽤 성가신 놈들이야.",
+            QuestId = "hunter_goblin"
+        },
+        new NpcState
+        {
+            Name = "기사단장",
+            X = 350,
+            Y = 300,
+            Message = "보스 몬스터를 토벌할 용사가 필요하다.",
+            QuestId = "boss_clear"
+        }
+    };
+
+    // 초기화
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/gamehub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<List<PlayerState>>("UpdatePlayers", UpdatePlayers);
+        hubConnection.On<List<MonsterState>>("UpdateMonsters", UpdateMonsters);
+        hubConnection.On<List<DroppedItem>>("UpdateDrops", UpdateDrops);
+
+        try
+        {
+            await hubConnection.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("SignalR 연결 실패: " + ex.Message);
+        }
+    }
+
+    // JS 키 입력 연결
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create((object)this);
+            await JS.InvokeVoidAsync("gameInput.init", dotNetRef);
+        }
+    }
+
+    // 게임 입장
+    private async Task JoinGame()
+    {
+        if (string.IsNullOrWhiteSpace(playerName))
+            playerName = "Player";
+
+        if (string.IsNullOrWhiteSpace(roomCode))
+            roomCode = "room1";
+
+        joined = true;
+        StateHasChanged();
+
+        if (hubConnection == null)
+            return;
+
+        await hubConnection.SendAsync("JoinGame", roomCode, playerName);
+        AiService.Start(hubConnection);
+    }
+
+    // 플레이어 상태 수신
+    private void UpdatePlayers(List<PlayerState> updatedPlayers)
+    {
+        players = updatedPlayers;
+
+        var me = players.FirstOrDefault(p => p.Name == playerName);
+
+        if (me != null)
+        {
+            myX = me.X;
+            myY = me.Y;
+            myHp = me.Hp;
+            myMaxHp = me.MaxHp;
+            myLevel = me.Level;
+            myExp = me.Exp;
+            myGold = me.Gold;
+            myCurrentMap = me.CurrentMap;
+
+            myStr = me.Str;
+            myDef = me.Def;
+            myInt = me.Int;
+            myStatPoint = me.StatPoint;
+            myAttackPower = me.AttackPower;
+            myDefense = me.Defense;
+            mySlimeKillCount = me.SlimeKillCount;
+
+            myInventory = me.Inventory;
+            mySkillSlots = me.SkillSlots;
+            myWeapon = me.Weapon;
+            myArmor = me.Armor;
+
+            myQuests = me.Quests;
+            myQuestAccepted = me.QuestAccepted;
+            myQuestCompleted = me.QuestCompleted;
+            myQuestRewardReceived = me.QuestRewardReceived;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    // 몬스터 상태 수신
+    private void UpdateMonsters(List<MonsterState> updatedMonsters)
+    {
+        monsters = updatedMonsters;
+        InvokeAsync(StateHasChanged);
+    }
+
+    // 드랍 상태 수신
+    private void UpdateDrops(List<DroppedItem> updatedDrops)
+    {
+        droppedItems = updatedDrops;
+        InvokeAsync(StateHasChanged);
+    }
+
+    // 키 입력 처리
+    [JSInvokable]
+    public async Task OnKeyDown(string key)
+    {
+        switch (key)
+        {
+            case "ArrowUp":
+                if (TryOpenPortalConfirm())
+                    return;
+
+                await MovePlayer(0, -10, "up");
+                break;
+
+            case "ArrowDown":
+                await MovePlayer(0, 10, "down");
+                break;
+
+            case "ArrowLeft":
+                await MovePlayer(-10, 0, "left");
+                break;
+
+            case "ArrowRight":
+                await MovePlayer(10, 0, "right");
+                break;
+
+            case "Control":
+                await AttackMonster();
+                break;
+
+            case "Shift":
+                await Dash();
+                break;
+
+            case "1":
+                await UseSkill(1);
+                break;
+
+            case "2":
+                await UseSkill(2);
+                break;
+
+            case "3":
+                await UseSkill(3);
+                break;
+
+            case "i":
+            case "I":
+                showInventory = !showInventory;
+                await InvokeAsync(StateHasChanged);
+                break;
+
+            case "k":
+            case "K":
+                showSkillWindow = !showSkillWindow;
+                await InvokeAsync(StateHasChanged);
+                break;
+
+            case "s":
+            case "S":
+                showCharacterWindow = !showCharacterWindow;
+                await InvokeAsync(StateHasChanged);
+                break;
+
+            case "e":
+            case "E":
+                showEquipmentWindow = !showEquipmentWindow;
+                await InvokeAsync(StateHasChanged);
+                break;
+
+            case "z":
+            case "Z":
+                await PickupOrInteract();
+                break;
+        }
+    }
+
+    // 스킬 사용
+    private async Task UseSkill(int slot)
+    {
+        var skill = mySkillSlots.FirstOrDefault(s => s.Slot == slot);
+
+        if (skill == null || string.IsNullOrWhiteSpace(skill.SkillName))
+            return;
+
+        if (GetCooldownLeft(slot) > 0)
+            return;
+
+        skillCooldownEnds[slot] = DateTime.Now.AddSeconds(skill.CooldownSeconds);
+
+        if (skill.SkillName == "파이어볼")
+            await Fireball();
+        else if (skill.SkillName == "힐")
+            await HealSkill();
+        else if (skill.SkillName == "회전베기")
+            await SpinAttack();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // 이동
+    private async Task MovePlayer(int moveX, int moveY, string direction)
+    {
+        int nextX = myX + moveX;
+        int nextY = myY + moveY;
+
+        if (IsBlockedTile(nextX, nextY))
+            return;
+
+        var result = InputService.Move(myX, myY, moveX, moveY, direction);
+
+        myX = result.x;
+        myY = result.y;
+
+        playerImage = direction switch
+        {
+            "up" => "/images/player/up.png",
+            "down" => "/images/player/down.png",
+            "left" => "/images/player/left.png",
+            "right" => "/images/player/right.png",
+            _ => playerImage
+        };
+
+        CloseNpcDialogIfFar();
+        await SyncPlayerPosition();
+    }
+
+    // 대쉬
+    private async Task Dash()
+    {
+        if (!canDash)
+            return;
+
+        canDash = false;
+        isDashing = true;
+
+        var result = InputService.Dash(myX, myY);
+
+        if (IsBlockedTile(result.x, result.y))
+        {
+            isDashing = false;
+            canDash = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        myX = result.x;
+        myY = result.y;
+
+        await SyncPlayerPosition();
+
+        await Task.Delay(150);
+        isDashing = false;
+        await InvokeAsync(StateHasChanged);
+
+        await Task.Delay(850);
+        canDash = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // 기본 공격
+    private async Task AttackMonster()
+    {
+        showAttackEffect = true;
+        await InvokeAsync(StateHasChanged);
+
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("AttackMonster");
+
+        await Task.Delay(150);
+        showAttackEffect = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // 파이어볼
+    private async Task Fireball()
+    {
+        var position = SkillService.GetFireballPosition(myX, myY, InputService.LastDirection);
+
+        fireballX = position.x;
+        fireballY = position.y;
+
+        showFireballEffect = true;
+        await InvokeAsync(StateHasChanged);
+
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("CastFireball", fireballX, fireballY);
+
+        await Task.Delay(250);
+        showFireballEffect = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // 힐
+    private async Task HealSkill()
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("HealPlayer");
+    }
+
+    // 회전베기
+    private async Task SpinAttack()
+    {
+        showSpinEffect = true;
+        await InvokeAsync(StateHasChanged);
+
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("SpinAttack");
+
+        await Task.Delay(250);
+        showSpinEffect = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // 위치 동기화
+    private async Task SyncPlayerPosition()
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("MovePlayer", myX, myY);
+    }
+
+    // 포탈 확인창 열기
+    private bool TryOpenPortalConfirm()
+    {
+        var portal = portals.FirstOrDefault(p =>
+            p.FromMap == myCurrentMap &&
+            Math.Abs(p.X - myX) < 70 &&
+            Math.Abs(p.Y - myY) < 70);
+
+        if (portal == null)
+            return false;
+
+        selectedPortal = portal;
+        showPortalConfirm = true;
+        InvokeAsync(StateHasChanged);
+
+        return true;
+    }
+
+    // 포탈 이동 확인
+    private async Task ConfirmPortalMove()
+    {
+        if (selectedPortal == null)
+            return;
+
+        if (hubConnection?.State == HubConnectionState.Connected)
+        {
+            await hubConnection.SendAsync(
+                "ChangeMap",
+                selectedPortal.ToMap,
+                selectedPortal.TargetX,
+                selectedPortal.TargetY
+            );
+        }
+
+        showPortalConfirm = false;
+        selectedPortal = null;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // 포탈 이동 취소
+    private async Task CancelPortalMove()
+    {
+        showPortalConfirm = false;
+        selectedPortal = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // 줍기 또는 NPC 상호작용
+    private async Task PickupOrInteract()
+    {
+        var npc = npcs.FirstOrDefault(n =>
+            myCurrentMap == MapType.Town &&
+            Math.Abs(n.X - myX) < 80 &&
+            Math.Abs(n.Y - myY) < 80);
+
+        if (npc != null)
+        {
+            selectedNpc = npc;
+            npcMessage = npc.Message;
+            showNpcDialog = true;
+            showShop = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("PickupItem");
+    }
+
+    // NPC 창 닫기
+    private void CloseNpcDialogIfFar()
+    {
+        if (selectedNpc == null)
+            return;
+
+        if (Math.Abs(selectedNpc.X - myX) > 110 || Math.Abs(selectedNpc.Y - myY) > 110)
+        {
+            selectedNpc = null;
+            showNpcDialog = false;
+            showShop = false;
+        }
+    }
+
+    private void CloseShop()
+    {
+        selectedNpc = null;
+        showShop = false;
+        showNpcDialog = false;
+    }
+
+    // 서버 호출 메서드들
+    private async Task BuyPotion()
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("BuyPotion");
+    }
+
+    private async Task UseInventoryItem(string itemName)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("UseInventoryItem", itemName);
+    }
+
+    private async Task EquipItem(string itemName)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("EquipItem", itemName);
+    }
+
+    private async Task UnequipItem(string equipmentType)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("UnequipItem", equipmentType);
+    }
+
+    private async Task AddStat(string statName)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("AddStat", statName);
+    }
+
+    private async Task AcceptQuest(string questId)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("AcceptQuest", questId);
+    }
+
+    private async Task ReceiveQuestReward(string questId)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("ReceiveQuestReward", questId);
+    }
+
+    private async Task SetSkillSlot(int slot, string skillName)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("SetSkillSlot", slot, skillName);
+    }
+
+    // 쿨타임 남은 시간
+    private int GetCooldownLeft(int slot)
+    {
+        if (!skillCooldownEnds.ContainsKey(slot))
+            return 0;
+
+        var left = skillCooldownEnds[slot] - DateTime.Now;
+
+        if (left.TotalSeconds <= 0)
+            return 0;
+
+        return (int)Math.Ceiling(left.TotalSeconds);
+    }
+
+    // 현재 맵 이름
+    private string GetMapName(MapType map)
+    {
+        return map switch
+        {
+            MapType.Town => "마을",
+            MapType.Field => "사냥터",
+            MapType.BossRoom => "보스방",
+            _ => "알 수 없음"
+        };
+    }
+
+    // 몬스터 이미지
+    private string GetMonsterImage(MonsterType type)
+    {
+        return type switch
+        {
+            MonsterType.Slime => "/images/monster/slime.png",
+            MonsterType.Bat => "/images/monster/bat.png",
+            MonsterType.Goblin => "/images/monster/goblin.png",
+            MonsterType.Boss => "/images/monster/boss.png",
+            _ => "/images/monster/slime.png"
+        };
+    }
+
+    // 퀘스트 상태 텍스트
+    private string GetQuestText()
+    {
+        if (myQuests.Count == 0)
+            return "없음";
+
+        var active = myQuests.FirstOrDefault(q => !q.RewardReceived);
+
+        if (active == null)
+            return "완료";
+
+        var quest = questDefinitions.FirstOrDefault(q => q.QuestId == active.QuestId);
+
+        if (quest == null)
+            return "진행중";
+
+        if (active.Completed)
+            return $"{quest.QuestName} 보상 가능";
+
+        return $"{quest.QuestName} {active.CurrentCount}/{quest.RequiredCount}";
+    }
+
+    // 맵 타일 클래스
+    private string GetTileClass(int x, int y)
+    {
+        if (myCurrentMap == MapType.Town)
+        {
+            if (y == 0 || y == 12 || x == 0 || x == 19)
+                return "tile wall";
+
+            if (y == 5 || y == 6 || x == 10)
+                return "tile town-road";
+
+            if ((x >= 3 && x <= 5 && y >= 2 && y <= 4) ||
+                (x >= 13 && x <= 15 && y >= 2 && y <= 4))
+                return "tile house";
+
+            if ((x == 2 && y == 9) || (x == 17 && y == 9))
+                return "tile tree";
+
+            return "tile town-grass";
+        }
+
+        if (myCurrentMap == MapType.Field)
+        {
+            if (y == 0 || y == 12 || x == 0 || x == 19)
+                return "tile wall";
+
+            if (y == 2 && x >= 4 && x <= 8)
+                return "tile water";
+
+            if (y == 8 && x >= 12 && x <= 15)
+                return "tile rock";
+
+            if (y == 6 || x == 2)
+                return "tile dirt-road";
+
+            return "tile field-grass";
+        }
+
+        if (myCurrentMap == MapType.BossRoom)
+        {
+            if (y == 0 || y == 12 || x == 0 || x == 19)
+                return "tile boss-wall";
+
+            if ((x == 3 && y == 3) || (x == 16 && y == 3) || (x == 3 && y == 9) || (x == 16 && y == 9))
+                return "tile torch";
+
+            return "tile boss-floor";
+        }
+
+        return "tile grass";
+    }
+
+    // 플레이어 충돌 체크
+    private bool IsBlockedTile(int x, int y)
+    {
+        if (x < 24 || x > 976 || y < 24 || y > 626)
+            return true;
+
+        int tileX = x / 50;
+        int tileY = y / 50;
+
+        if (tileX <= 0 || tileX >= 19 || tileY <= 0 || tileY >= 12)
+            return true;
+
+        if (myCurrentMap == MapType.Field)
+        {
+            if (tileY == 2 && tileX >= 4 && tileX <= 8)
+                return true;
+
+            if (tileY == 8 && tileX >= 12 && tileX <= 15)
+                return true;
+        }
+
+        return false;
+    }
+
+    // 정리
+    public async ValueTask DisposeAsync()
+    {
+        AiService.Stop();
+        dotNetRef?.Dispose();
+
+        if (hubConnection != null)
+            await hubConnection.DisposeAsync();
+    }
+}

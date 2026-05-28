@@ -1,0 +1,81 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\BlazorApp.bundle.scp.css",
+      "PackagePath": "staticwebassets\\BlazorApp.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\gameInput.js",
+      "PackagePath": "staticwebassets\\gameInput.js"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\monster\\bat.png",
+      "PackagePath": "staticwebassets\\images\\monster\\bat.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\monster\\boss.png",
+      "PackagePath": "staticwebassets\\images\\monster\\boss.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\monster\\goblin.png",
+      "PackagePath": "staticwebassets\\images\\monster\\goblin.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\monster\\slime.png",
+      "PackagePath": "staticwebassets\\images\\monster\\slime.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\npc\\shopkeeper.png",
+      "PackagePath": "staticwebassets\\images\\npc\\shopkeeper.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\down.png",
+      "PackagePath": "staticwebassets\\images\\player\\down.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\left.png",
+      "PackagePath": "staticwebassets\\images\\player\\left.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\right.png",
+      "PackagePath": "staticwebassets\\images\\player\\right.png"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\up.png",
+      "PackagePath": "staticwebassets\\images\\player\\up.png"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BlazorApp.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.BlazorApp.props",
+      "PackagePath": "build\\BlazorApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.BlazorApp.props",
+      "PackagePath": "buildMultiTargeting\\BlazorApp.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.BlazorApp.props",
+      "PackagePath": "buildTransitive\\BlazorApp.props"
+    }
+  ],
+  "ElementsToRemove": []
+}
