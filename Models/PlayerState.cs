@@ -17,6 +17,14 @@ public class PlayerState
     public int Exp { get; set; } = 0;
     public int Gold { get; set; } = 0;
 
+    // 캐릭터 커스터마이징 정보
+    // CSS에서 색상으로 캐릭터를 그리기 때문에 이미지 파일 없이도 외형 변경 가능
+    public string SkinColor { get; set; } = "#f2c7a5";
+    public string HairColor { get; set; } = "#2b1b12";
+    public string OutfitColor { get; set; } = "#2563eb";
+    public string HairStyle { get; set; } = "short";
+    public string FaceIcon { get; set; } = "🙂";
+
     public int Str { get; set; } = 1;
     public int Def { get; set; } = 1;
     public int Int { get; set; } = 1;

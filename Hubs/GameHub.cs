@@ -228,6 +228,26 @@ public class GameHub : Hub
         await SendMapState(player.RoomCode, player.CurrentMap);
     }
 
+    // 캐릭터 외형 변경
+    public async Task UpdateCharacterAppearance(string skinColor, string hairColor, string outfitColor, string hairStyle, string faceIcon)
+    {
+        if (!Players.TryGetValue(Context.ConnectionId, out var player)) return;
+
+        var allowedSkin = new[] { "#f2c7a5", "#d8a47f", "#8d5524", "#ffe0bd" };
+        var allowedHair = new[] { "#2b1b12", "#7c2d12", "#facc15", "#111827", "#f8fafc" };
+        var allowedOutfit = new[] { "#2563eb", "#16a34a", "#dc2626", "#7c3aed", "#f97316", "#0f172a" };
+        var allowedHairStyle = new[] { "short", "long", "spiky", "bob" };
+        var allowedFace = new[] { "🙂", "😐", "😎", "😡", "😊", "🤠" };
+
+        if (allowedSkin.Contains(skinColor)) player.SkinColor = skinColor;
+        if (allowedHair.Contains(hairColor)) player.HairColor = hairColor;
+        if (allowedOutfit.Contains(outfitColor)) player.OutfitColor = outfitColor;
+        if (allowedHairStyle.Contains(hairStyle)) player.HairStyle = hairStyle;
+        if (allowedFace.Contains(faceIcon)) player.FaceIcon = faceIcon;
+
+        await SendRoomState(player.RoomCode);
+    }
+
     // 상점 구매
     public async Task BuyShopItem(string itemName)
     {

@@ -404,3 +404,225 @@ button { cursor: pointer; }
     from { transform: translate(-50%, -50%) scale(1.4); opacity: .5; }
     to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
+
+/* ===============================
+   Character Customizing Avatar
+   =============================== */
+.custom-avatar {
+    --skin: #f2c7a5;
+    --hair: #2b1b12;
+    --outfit: #2563eb;
+    width: 46px;
+    height: 58px;
+    position: relative;
+    margin: 0 auto;
+    image-rendering: pixelated;
+}
+
+.custom-avatar.big-avatar {
+    width: 76px;
+    height: 96px;
+    transform: scale(1.35);
+    margin: 24px auto 34px;
+}
+
+.avatar-head {
+    width: 30px;
+    height: 30px;
+    background: var(--skin);
+    border: 2px solid rgba(0, 0, 0, 0.35);
+    border-radius: 12px;
+    position: absolute;
+    left: 8px;
+    top: 0;
+    overflow: hidden;
+    z-index: 2;
+}
+
+.avatar-face {
+    position: absolute;
+    left: 50%;
+    top: 52%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    line-height: 1;
+    z-index: 4;
+}
+
+.avatar-hair {
+    position: absolute;
+    left: -2px;
+    top: -3px;
+    width: 34px;
+    height: 14px;
+    background: var(--hair);
+    z-index: 3;
+}
+
+.avatar-hair.hair-short {
+    border-radius: 12px 12px 5px 5px;
+}
+
+.avatar-hair.hair-long {
+    height: 24px;
+    border-radius: 12px 12px 8px 8px;
+}
+
+.avatar-hair.hair-spiky {
+    height: 16px;
+    clip-path: polygon(0 100%, 8% 25%, 18% 100%, 30% 10%, 42% 100%, 55% 20%, 68% 100%, 82% 15%, 100% 100%);
+}
+
+.avatar-hair.hair-bob {
+    height: 20px;
+    border-radius: 12px 12px 12px 12px;
+}
+
+.avatar-body {
+    position: absolute;
+    left: 6px;
+    top: 30px;
+    width: 34px;
+    height: 28px;
+    background: var(--outfit);
+    border: 2px solid rgba(0, 0, 0, 0.35);
+    border-radius: 10px 10px 8px 8px;
+    z-index: 1;
+}
+
+.avatar-body::before,
+.avatar-body::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 24px;
+    background: var(--skin);
+    border: 2px solid rgba(0, 0, 0, 0.25);
+    top: 2px;
+    border-radius: 999px;
+}
+
+.avatar-body::before {
+    left: -9px;
+}
+
+.avatar-body::after {
+    right: -9px;
+}
+
+.customize-window {
+    left: 700px;
+    top: 70px;
+    width: 330px;
+    max-height: 560px;
+}
+
+.custom-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 145px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 14px;
+}
+
+.custom-section {
+    margin-bottom: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.color-buttons,
+.choice-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.color-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+}
+
+.color-dot.selected {
+    outline: 3px solid #facc15;
+}
+
+.choice-buttons button,
+.save-custom-button {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.12);
+    color: white;
+    cursor: pointer;
+}
+
+.choice-buttons button.active {
+    background: #2563eb;
+}
+
+.face-buttons button {
+    font-size: 18px;
+}
+
+.save-custom-button {
+    width: 100%;
+    margin-top: 8px;
+    background: #22c55e;
+    font-weight: bold;
+}
+
+.hint-text {
+    opacity: 0.75;
+    font-size: 12px;
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+/* ===== 스탯창 스크롤 수정 ===== */
+.character-window {
+    max-height: 430px;
+    overflow: hidden;
+}
+
+.character-window .scroll-body {
+    max-height: 340px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.character-window .scroll-body::-webkit-scrollbar,
+.skill-window .scroll-body::-webkit-scrollbar,
+.inventory-window .scroll-body::-webkit-scrollbar,
+.building-inner-window .scroll-body::-webkit-scrollbar,
+.customize-window .scroll-body::-webkit-scrollbar,
+.equipment-window .scroll-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.character-window .scroll-body::-webkit-scrollbar-thumb,
+.skill-window .scroll-body::-webkit-scrollbar-thumb,
+.inventory-window .scroll-body::-webkit-scrollbar-thumb,
+.building-inner-window .scroll-body::-webkit-scrollbar-thumb,
+.customize-window .scroll-body::-webkit-scrollbar-thumb,
+.equipment-window .scroll-body::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.65);
+    border-radius: 999px;
+}
+
+.character-window .scroll-body::-webkit-scrollbar-track,
+.skill-window .scroll-body::-webkit-scrollbar-track,
+.inventory-window .scroll-body::-webkit-scrollbar-track,
+.building-inner-window .scroll-body::-webkit-scrollbar-track,
+.customize-window .scroll-body::-webkit-scrollbar-track,
+.equipment-window .scroll-body::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.55);
+    border-radius: 999px;
+}

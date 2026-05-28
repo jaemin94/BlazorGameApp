@@ -116,14 +116,26 @@ else
 
         <div class="player @(isDashing ? "dash-effect" : "")" style="left:@($"{myX}px"); top:@($"{myY}px");">
             <div class="name">@playerName</div>
-            <img src="@playerImage" class="player-img" />
+            <div class="custom-avatar" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
+                <div class="avatar-head">
+                    <div class="avatar-hair hair-@myHairStyle"></div>
+                    <span class="avatar-face">@myFaceIcon</span>
+                </div>
+                <div class="avatar-body"></div>
+            </div>
         </div>
 
         @foreach (var player in players.Where(p => p.Name != playerName && p.CurrentMap == myCurrentMap))
         {
             <div class="player" style="left:@($"{player.X}px"); top:@($"{player.Y}px");">
                 <div class="name">@player.Name</div>
-                <img src="/images/player/down.png" class="player-img" />
+                <div class="custom-avatar" style="--skin:@player.SkinColor; --hair:@player.HairColor; --outfit:@player.OutfitColor;">
+                    <div class="avatar-head">
+                        <div class="avatar-hair hair-@player.HairStyle"></div>
+                        <span class="avatar-face">@player.FaceIcon</span>
+                    </div>
+                    <div class="avatar-body"></div>
+                </div>
             </div>
         }
 
@@ -301,6 +313,85 @@ else
             </div>
         }
 
+        @if (showCustomizeWindow)
+        {
+            <div class="rpg-window customize-window">
+                <div class="window-title">
+                    <h4>캐릭터 커스터마이징</h4>
+                    <button class="x-button" @onclick="() => showCustomizeWindow = false">X</button>
+                </div>
+
+                <div class="scroll-body">
+                    <div class="custom-preview">
+                        <div class="custom-avatar big-avatar" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
+                            <div class="avatar-head">
+                                <div class="avatar-hair hair-@myHairStyle"></div>
+                                <span class="avatar-face">@myFaceIcon</span>
+                            </div>
+                            <div class="avatar-body"></div>
+                        </div>
+                    </div>
+
+                    <div class="custom-section">
+                        <strong>피부색</strong>
+                        <div class="color-buttons">
+                            @foreach (var color in skinColors)
+                            {
+                                var selectedColor = color;
+                                <button class="color-dot @(mySkinColor == selectedColor ? "selected" : "")" style="background:@selectedColor" @onclick="() => mySkinColor = selectedColor"></button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="custom-section">
+                        <strong>머리색</strong>
+                        <div class="color-buttons">
+                            @foreach (var color in hairColors)
+                            {
+                                var selectedColor = color;
+                                <button class="color-dot @(myHairColor == selectedColor ? "selected" : "")" style="background:@selectedColor" @onclick="() => myHairColor = selectedColor"></button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="custom-section">
+                        <strong>의상색</strong>
+                        <div class="color-buttons">
+                            @foreach (var color in outfitColors)
+                            {
+                                var selectedColor = color;
+                                <button class="color-dot @(myOutfitColor == selectedColor ? "selected" : "")" style="background:@selectedColor" @onclick="() => myOutfitColor = selectedColor"></button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="custom-section">
+                        <strong>헤어스타일</strong>
+                        <div class="choice-buttons">
+                            <button class="@(myHairStyle == "short" ? "active" : "")" @onclick='() => myHairStyle = "short"'>짧은머리</button>
+                            <button class="@(myHairStyle == "long" ? "active" : "")" @onclick='() => myHairStyle = "long"'>긴머리</button>
+                            <button class="@(myHairStyle == "spiky" ? "active" : "")" @onclick='() => myHairStyle = "spiky"'>삐죽머리</button>
+                            <button class="@(myHairStyle == "bob" ? "active" : "")" @onclick='() => myHairStyle = "bob"'>단발</button>
+                        </div>
+                    </div>
+
+                    <div class="custom-section">
+                        <strong>표정</strong>
+                        <div class="choice-buttons face-buttons">
+                            @foreach (var face in faceIcons)
+                            {
+                                var selectedFace = face;
+                                <button class="@(myFaceIcon == selectedFace ? "active" : "")" @onclick="() => myFaceIcon = selectedFace">@selectedFace</button>
+                            }
+                        </div>
+                    </div>
+
+                    <button class="save-custom-button" @onclick="SaveCharacterAppearance">외형 저장</button>
+                    <p class="hint-text">C 키로 창을 열고 닫을 수 있습니다.</p>
+                </div>
+            </div>
+        }
+
         @if (showAttackEffect)
         {
             <div class="attack-effect" style="left:@($"{myX}px"); top:@($"{myY}px");"></div>
@@ -329,6 +420,18 @@ else
     private string playerName = "";
     private string roomCode = "room1";
     private string playerImage = "/images/player/down.png";
+
+    // 캐릭터 커스터마이징 상태
+    private string mySkinColor = "#f2c7a5";
+    private string myHairColor = "#2b1b12";
+    private string myOutfitColor = "#2563eb";
+    private string myHairStyle = "short";
+    private string myFaceIcon = "🙂";
+
+    private readonly List<string> skinColors = new() { "#f2c7a5", "#d8a47f", "#8d5524", "#ffe0bd" };
+    private readonly List<string> hairColors = new() { "#2b1b12", "#7c2d12", "#facc15", "#111827", "#f8fafc" };
+    private readonly List<string> outfitColors = new() { "#2563eb", "#16a34a", "#dc2626", "#7c3aed", "#f97316", "#0f172a" };
+    private readonly List<string> faceIcons = new() { "🙂", "😐", "😎", "😡", "😊", "🤠" };
     private bool joined = false;
 
     private int myX = 400;
@@ -352,6 +455,7 @@ else
     private bool showSkillWindow = false;
     private bool showCharacterWindow = false;
     private bool showEquipmentWindow = false;
+    private bool showCustomizeWindow = false;
     private bool canDash = true;
     private bool isDashing = false;
     private bool showAttackEffect = false;
@@ -486,6 +590,11 @@ else
             myAttackPower = me.AttackPower; myDefense = me.Defense; myJob = me.Job;
             myInventory = me.Inventory; mySkillSlots = me.SkillSlots; myLearnedSkills = me.LearnedSkills; myQuests = me.Quests;
             myWeapon = me.Weapon; myArmor = me.Armor;
+            mySkinColor = me.SkinColor;
+            myHairColor = me.HairColor;
+            myOutfitColor = me.OutfitColor;
+            myHairStyle = me.HairStyle;
+            myFaceIcon = me.FaceIcon;
         }
         InvokeAsync(StateHasChanged);
     }
@@ -521,6 +630,7 @@ else
             case "k": case "K": showSkillWindow = !showSkillWindow; await InvokeAsync(StateHasChanged); break;
             case "s": case "S": showCharacterWindow = !showCharacterWindow; await InvokeAsync(StateHasChanged); break;
             case "e": case "E": showEquipmentWindow = !showEquipmentWindow; await InvokeAsync(StateHasChanged); break;
+            case "c": case "C": showCustomizeWindow = !showCustomizeWindow; await InvokeAsync(StateHasChanged); break;
             case "z": case "Z": await PickupOrInteract(); break;
         }
     }
@@ -645,6 +755,21 @@ else
     private async Task SyncPlayerPosition()
     {
         if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("MovePlayer", myX, myY);
+    }
+
+    private async Task SaveCharacterAppearance()
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+        {
+            await hubConnection.SendAsync(
+                "UpdateCharacterAppearance",
+                mySkinColor,
+                myHairColor,
+                myOutfitColor,
+                myHairStyle,
+                myFaceIcon
+            );
+        }
     }
 
     private async Task BuyShopItem(string itemName)
