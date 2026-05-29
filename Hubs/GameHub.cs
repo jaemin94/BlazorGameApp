@@ -246,7 +246,8 @@ public class GameHub : Hub
         if (target == null) return;
         if (GetDistance(player.X, player.Y, target.X, target.Y) > 80) return;
 
-        target.Hp -= player.AttackPower;
+        int damage = GetBasicAttackDamage(player);
+        target.Hp -= damage;
         if (target.Hp <= 0) KillMonster(player, monsters, target);
 
         await SendRoomState(player.RoomCode);
@@ -514,8 +515,7 @@ public class GameHub : Hub
         int targetCount = skill.GetTargetCount(skillLevel);
         int hitCount = skill.GetHitCount(skillLevel);
         int range = skill.GetRange(skillLevel);
-        int damage = skill.GetDamage(skillLevel) + player.AttackPower;
-        if (player.Job == JobType.Mage) damage += player.MagicPower;
+        int damage = GetSkillDamage(player, skill, skillLevel);
 
         var targets = monsters
             .Where(m => GetDistance(player.X, player.Y, m.X, m.Y) <= range)
@@ -535,6 +535,31 @@ public class GameHub : Hub
                 }
             }
         }
+    }
+
+
+    private static int GetBasicAttackDamage(PlayerState player)
+    {
+        // 기존 단순 AttackPower보다 타격감이 느껴지도록 스탯/장비 반영치를 강화합니다.
+        int weaponBonus = player.Weapon?.AttackBonus ?? 0;
+        int rawDamage = player.BaseAttackPower + player.Str * 3 + weaponBonus * 2;
+        int variance = Random.Shared.Next(-2, 4);
+        return Math.Max(1, rawDamage + variance);
+    }
+
+    private static int GetSkillDamage(PlayerState player, SkillDefinition skill, int skillLevel)
+    {
+        // 스킬은 기본 공격보다 확실히 강하게 체감되도록 배율을 적용합니다.
+        int weaponBonus = player.Weapon?.AttackBonus ?? 0;
+        int mainStatBonus = player.Job == JobType.Mage ? player.MagicPower : player.Str * 3;
+        int baseDamage = skill.GetDamage(skillLevel);
+        int damage = baseDamage + player.BaseAttackPower + weaponBonus * 2 + mainStatBonus;
+
+        if (player.Job == JobType.Mage)
+            damage += player.MagicPower;
+
+        int variance = Random.Shared.Next(-3, 6);
+        return Math.Max(1, damage + variance);
     }
 
     private static void MoveMonsterTowardTarget(MonsterState monster, PlayerState target)

@@ -146,26 +146,50 @@ else
             <div class="mini-help">Z 상호작용 · I 가방 · K 스킬 · C 외형</div>
         </div>
 
-        <div class="player @(isDashing ? "dash-effect" : "")" style="left:@($"{myX}px"); top:@($"{myY}px");">
+        <div class="player @(isDashing ? "dash-effect" : "") @(showAttackEffect ? "player-attacking" : "")" style="left:@($"{myX}px"); top:@($"{myY}px");">
             <div class="name">@playerName</div>
-            <img src="@GetAvatarImage(myAvatarPreset)" class="avatar-sprite player-avatar-sprite" alt="내 캐릭터" />
+            <div class="player-combat-layer">
+                <img src="@GetAvatarImage(myAvatarPreset)" class="avatar-sprite player-avatar-sprite" alt="내 캐릭터" />
+                @if (myWeapon != null)
+                {
+                    <img src="@GetWeaponImage(myWeapon.Name)"
+                         class="weapon-sprite weapon-@GetWeaponKind(myWeapon.Name) weapon-dir-@attackDirection @(showAttackEffect ? "weapon-attacking" : "")"
+                         alt="장착 무기" />
+                }
+            </div>
         </div>
 
         @foreach (var player in players.Where(p => p.Name != playerName && p.CurrentMap == myCurrentMap))
         {
             <div class="player" style="left:@($"{player.X}px"); top:@($"{player.Y}px");">
                 <div class="name">@player.Name</div>
-                <img src="@GetAvatarImage(player.AvatarPreset)" class="avatar-sprite player-avatar-sprite" alt="플레이어 캐릭터" />
+                <div class="player-combat-layer">
+                    <img src="@GetAvatarImage(player.AvatarPreset)" class="avatar-sprite player-avatar-sprite" alt="플레이어 캐릭터" />
+                    @if (player.Weapon != null)
+                    {
+                        <img src="@GetWeaponImage(player.Weapon.Name)" class="weapon-sprite weapon-@GetWeaponKind(player.Weapon.Name) weapon-dir-down" alt="장착 무기" />
+                    }
+                </div>
             </div>
         }
 
         @foreach (var monster in monsters)
         {
-            <div class="monster" style="left:@($"{monster.X}px"); top:@($"{monster.Y}px");">
+            <div class="monster @(hitMonsterIds.Contains(monster.Id) ? "monster-hit" : "")" style="left:@($"{monster.X}px"); top:@($"{monster.Y}px");">
                 <img src="@GetMonsterImage(monster.Type)" class="monster-img" />
                 <div class="monster-name">@monster.Name</div>
                 <div class="monster-hp">HP: @monster.Hp / @monster.MaxHp</div>
             </div>
+        }
+
+        @foreach (var fx in slashEffects)
+        {
+            <div class="attack-slash slash-@fx.Direction fx-@fx.Kind" style="left:@($"{fx.X}px"); top:@($"{fx.Y}px");"></div>
+        }
+
+        @foreach (var text in combatTexts)
+        {
+            <div class="damage-number damage-@text.Kind" style="left:@($"{text.X}px"); top:@($"{text.Y}px");">@text.Text</div>
         }
 
         @foreach (var item in droppedItems)
@@ -260,7 +284,24 @@ else
                 </div>
 
                 <div class="scroll-body">
-                    <div class="equipment-slot"><strong>무기</strong><span>@(myWeapon?.Name ?? "없음")</span>@if (myWeapon != null) { <button @onclick='async () => await UnequipItem("Weapon")'>해제</button> }</div>
+                    <div class="equipment-slot equipment-visual-slot">
+                        <strong>무기</strong>
+                        @if (myWeapon != null)
+                        {
+                            <div class="equipped-weapon-preview">
+                                <img src="@GetWeaponImage(myWeapon.Name)" alt="장착 무기" />
+                                <div>
+                                    <span>@myWeapon.Name</span>
+                                    <small>@GetWeaponKindName(myWeapon.Name) / 공격력 +@myWeapon.AttackBonus</small>
+                                </div>
+                            </div>
+                            <button @onclick='async () => await UnequipItem("Weapon")'>해제</button>
+                        }
+                        else
+                        {
+                            <span>없음</span>
+                        }
+                    </div>
                     <div class="equipment-slot"><strong>방어구</strong><span>@(myArmor?.Name ?? "없음")</span>@if (myArmor != null) { <button @onclick='async () => await UnequipItem("Armor")'>해제</button> }</div>
                     <hr />
                     <div>공격력: @myAttackPower</div>
@@ -418,7 +459,7 @@ else
 
         @if (showAttackEffect)
         {
-            <div class="attack-effect" style="left:@($"{myX}px"); top:@($"{myY}px");"></div>
+            <div class="attack-effect attack-@attackDirection attack-weapon-@GetWeaponKind(myWeapon?.Name)" style="left:@($"{myX}px"); top:@($"{myY}px");"></div>
         }
 
         <div class="quick-slot-bar">
@@ -438,12 +479,17 @@ else
 }
 
 @code {
+    private record CombatText(int Id, int X, int Y, string Text, string Kind);
+    private record SlashEffect(int Id, int X, int Y, string Direction, string Kind);
+
     private HubConnection? hubConnection;
     private DotNetObjectReference<object>? dotNetRef;
 
     private string playerName = "";
     private string roomCode = "room1";
     private string playerImage = "/images/player/down.png";
+
+    private HashSet<string> hitMonsterIds = new();
 
     // 캐릭터 커스터마이징 상태
     private string mySkinColor = "#f2c7a5";
@@ -505,6 +551,10 @@ else
     private bool canDash = true;
     private bool isDashing = false;
     private bool showAttackEffect = false;
+    private string attackDirection = "down";
+    private int combatFxSeq = 0;
+    private List<CombatText> combatTexts = new();
+    private List<SlashEffect> slashEffects = new();
 
     private bool showPortalConfirm = false;
     private PortalState? selectedPortal = null;
@@ -521,6 +571,12 @@ else
     private List<PlayerSkillState> myLearnedSkills = new();
     private List<PlayerQuestState> myQuests = new();
     private Dictionary<int, DateTime> skillCooldownEnds = new();
+
+    // 몬스터 HP 변경 감지용: 서버에서 실제 HP가 줄었을 때만 데미지 숫자 표시
+    private Dictionary<string, int> monsterHpSnapshot = new();
+
+    // 직전에 사용한 액션이 스킬인지 기본공격인지 구분해서 이펙트 스타일 분리
+    private bool lastActionWasSkill = false;
 
     private List<BuildingState> buildings = new()
     {
@@ -647,7 +703,22 @@ else
         InvokeAsync(StateHasChanged);
     }
 
-    private void UpdateMonsters(List<MonsterState> updatedMonsters) { monsters = updatedMonsters; InvokeAsync(StateHasChanged); }
+    private void UpdateMonsters(List<MonsterState> updatedMonsters)
+    {
+        foreach (var monster in updatedMonsters)
+        {
+            if (monsterHpSnapshot.TryGetValue(monster.Id, out var oldHp) && monster.Hp < oldHp)
+            {
+                int damage = Math.Max(1, oldHp - monster.Hp);
+                AddMonsterHitFeedback(monster, damage, lastActionWasSkill ? "skill" : "normal");
+            }
+        }
+
+        monsters = updatedMonsters;
+        monsterHpSnapshot = updatedMonsters.ToDictionary(m => m.Id, m => m.Hp);
+        lastActionWasSkill = false;
+        InvokeAsync(StateHasChanged);
+    }
     private void UpdateDrops(List<DroppedItem> updatedDrops) { droppedItems = updatedDrops; InvokeAsync(StateHasChanged); }
 
     [JSInvokable]
@@ -732,6 +803,7 @@ else
 
     private async Task MovePlayer(int moveX, int moveY, string direction)
     {
+        attackDirection = direction;
         int nextX = myX + moveX;
         int nextY = myY + moveY;
         if (IsBlockedTile(nextX, nextY)) return;
@@ -772,10 +844,29 @@ else
 
     private async Task AttackMonster()
     {
+        // 화면에는 먼저 무기 휘두르는 모션만 보여줍니다.
+        // 실제 데미지 숫자는 서버에서 HP가 줄어든 뒤 UpdateMonsters에서 계산해서 표시합니다.
         showAttackEffect = true;
+        lastActionWasSkill = false;
+
+        var target = monsters
+            .Where(m => GetDistance(myX, myY, m.X, m.Y) <= 100)
+            .OrderBy(m => GetDistance(myX, myY, m.X, m.Y))
+            .FirstOrDefault();
+
+        if (target == null)
+        {
+            var miss = GetAttackPoint();
+            AddSlashEffect(miss.x, miss.y, "miss");
+            AddCombatText(miss.x, miss.y - 30, "MISS", "miss");
+        }
+
         await InvokeAsync(StateHasChanged);
-        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("AttackMonster");
-        await Task.Delay(150);
+
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("AttackMonster");
+
+        await Task.Delay(160);
         showAttackEffect = false;
         await InvokeAsync(StateHasChanged);
     }
@@ -789,6 +880,8 @@ else
         if (GetCooldownLeft(slot) > 0) return;
 
         skillCooldownEnds[slot] = DateTime.Now.AddSeconds(skill.CooldownSeconds);
+        lastActionWasSkill = true;
+        AddSkillCastVisual(skill);
         if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("UseSkillFromSlot", slot);
         await InvokeAsync(StateHasChanged);
     }
@@ -798,6 +891,76 @@ else
         if (!skillCooldownEnds.ContainsKey(slot)) return 0;
         var left = skillCooldownEnds[slot] - DateTime.Now;
         return left.TotalSeconds <= 0 ? 0 : (int)Math.Ceiling(left.TotalSeconds);
+    }
+
+    private void AddCombatText(int x, int y, string text, string kind)
+    {
+        int id = ++combatFxSeq;
+        combatTexts.Add(new CombatText(id, x + Random.Shared.Next(-10, 11), y, text, kind));
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(650);
+            combatTexts.RemoveAll(t => t.Id == id);
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void AddSlashEffect(int x, int y, string kind)
+    {
+        int id = ++combatFxSeq;
+        slashEffects.Add(new SlashEffect(id, x, y, attackDirection, kind));
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(260);
+            slashEffects.RemoveAll(f => f.Id == id);
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void AddSkillCastVisual(SkillDefinition skill)
+    {
+        if (skill.SkillId == "mage_heal")
+        {
+            AddCombatText(myX, myY - 50, "+HEAL", "heal");
+            return;
+        }
+
+        // 스킬 사용 즉시에는 캐스팅 이펙트만 표시합니다.
+        // 실제 타격 이펙트/데미지 숫자는 서버 HP 변화 기준으로 표시합니다.
+        var point = GetAttackPoint(115);
+        AddSlashEffect(point.x, point.y, "skill");
+    }
+
+    private void AddMonsterHitFeedback(MonsterState monster, int damage, string kind)
+    {
+        AddSlashEffect(monster.X, monster.Y, kind);
+        AddCombatText(monster.X, monster.Y - 42, $"-{damage}", kind);
+
+        hitMonsterIds.Add(monster.Id);
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(180);
+            hitMonsterIds.Remove(monster.Id);
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private (int x, int y) GetAttackPoint(int distance = 62)
+    {
+        int x = myX;
+        int y = myY;
+        if (attackDirection == "up") y -= distance;
+        else if (attackDirection == "down") y += distance;
+        else if (attackDirection == "left") x -= distance;
+        else if (attackDirection == "right") x += distance;
+        return (Math.Clamp(x, 24, 976), Math.Clamp(y, 24, 626));
+    }
+
+    private static double GetDistance(int x1, int y1, int x2, int y2)
+    {
+        int dx = x1 - x2;
+        int dy = y1 - y2;
+        return Math.Sqrt(dx * dx + dy * dy);
     }
 
     private async Task SyncPlayerPosition()
@@ -999,6 +1162,47 @@ else
         int diff = item.DefenseBonus - current;
         return diff >= 0 ? $"현재 방어구보다 +{diff}" : $"현재 방어구보다 {diff}";
     }
+
+
+    // 장착 무기에 맞는 이미지 경로
+    private string GetWeaponImage(string? weaponName)
+    {
+        return GetWeaponKind(weaponName) switch
+        {
+            "staff" => "/images/weapon/staff.svg",
+            "bow" => "/images/weapon/bow.svg",
+            "dagger" => "/images/weapon/dagger.svg",
+            "goblin-sword" => "/images/weapon/goblin_sword.svg",
+            "greatsword" => "/images/weapon/greatsword.svg",
+            _ => "/images/weapon/sword.svg"
+        };
+    }
+
+    // 무기 이름을 화면 모션 타입으로 변환
+    private string GetWeaponKind(string? weaponName)
+    {
+        if (string.IsNullOrWhiteSpace(weaponName)) return "fist";
+
+        if (weaponName.Contains("지팡이")) return "staff";
+        if (weaponName.Contains("활")) return "bow";
+        if (weaponName.Contains("단검")) return "dagger";
+        if (weaponName.Contains("고블린")) return "goblin-sword";
+        if (weaponName.Contains("대검") || weaponName.Contains("보스")) return "greatsword";
+        if (weaponName.Contains("검")) return "sword";
+
+        return "sword";
+    }
+
+    private string GetWeaponKindName(string? weaponName) => GetWeaponKind(weaponName) switch
+    {
+        "staff" => "지팡이",
+        "bow" => "활",
+        "dagger" => "단검",
+        "goblin-sword" => "고블린 검",
+        "greatsword" => "대검",
+        "sword" => "검",
+        _ => "맨손"
+    };
 
     private string GetMonsterImage(MonsterType type) => type switch
     {

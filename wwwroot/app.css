@@ -2262,3 +2262,423 @@ html, body {
         height: 132px;
     }
 }
+
+/* =========================================================
+   2026-05 sprite customize final override
+   - 블록 느낌 줄이고 SVG 캐릭터를 더 크게/부드럽게 표시
+   ========================================================= */
+.avatar-sprite {
+    image-rendering: auto !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 8px 8px rgba(0,0,0,.45)) !important;
+}
+.player-avatar-sprite {
+    width: 62px !important;
+    height: 72px !important;
+}
+.hud-avatar-sprite {
+    width: 48px !important;
+    height: 48px !important;
+}
+.preview-avatar-sprite {
+    width: 150px !important;
+    height: 150px !important;
+}
+.sprite-preview-stage {
+    min-height: 178px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    background: radial-gradient(circle at 50% 60%, rgba(250,204,21,.20), transparent 58%), linear-gradient(180deg, rgba(15,23,42,.95), rgba(2,6,23,.95)) !important;
+    border-radius: 14px !important;
+}
+.sprite-customize-window,
+.rpg-window.sprite-customize-window {
+    width: 330px !important;
+    max-width: 330px !important;
+    max-height: 560px !important;
+    overflow: hidden !important;
+}
+.sprite-customize-body {
+    max-height: 440px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 4px !important;
+}
+.sprite-preset-card img {
+    width: 54px !important;
+    height: 54px !important;
+    image-rendering: auto !important;
+}
+/* 기존 블록형 커스터마이징 파츠가 남아도 보이지 않게 차단 */
+.pixel-character,
+.pc-accessory,
+.pc-hair,
+.pc-head,
+.pc-body,
+.pc-accent,
+.pc-leg,
+.custom-avatar,
+.avatar-head,
+.avatar-body,
+.avatar-hair {
+    display: none !important;
+}
+/* =========================================================
+   Attack / Damage Motion Fix CSS
+   app.css 맨 아래에 추가
+   ========================================================= */
+
+.monster-hit {
+    animation: monsterHitShake 0.18s ease-out;
+    filter: brightness(1.55) drop-shadow(0 0 10px rgba(255, 80, 80, 0.95));
+}
+
+@keyframes monsterHitShake {
+    0% { transform: translate(-50%, -50%) translateX(0); }
+    25% { transform: translate(-50%, -50%) translateX(-6px); }
+    50% { transform: translate(-50%, -50%) translateX(6px); }
+    75% { transform: translate(-50%, -50%) translateX(-3px); }
+    100% { transform: translate(-50%, -50%) translateX(0); }
+}
+
+.attack-slash {
+    position: absolute;
+    width: 74px;
+    height: 74px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 240;
+}
+
+.attack-slash::before {
+    content: "";
+    position: absolute;
+    left: 8px;
+    top: 28px;
+    width: 58px;
+    height: 14px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.96), rgba(255,210,90,.95), transparent);
+    box-shadow: 0 0 14px rgba(255, 224, 130, .9);
+    animation: slashFlash 0.26s ease-out forwards;
+}
+
+.attack-slash.fx-skill::before {
+    height: 18px;
+    background: linear-gradient(90deg, transparent, rgba(125,211,252,.95), rgba(192,132,252,.95), transparent);
+    box-shadow: 0 0 18px rgba(125, 211, 252, .95);
+}
+
+.attack-slash.fx-miss::before {
+    opacity: .45;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+}
+
+.slash-up { transform: translate(-50%, -50%) rotate(-90deg); }
+.slash-down { transform: translate(-50%, -50%) rotate(90deg); }
+.slash-left { transform: translate(-50%, -50%) rotate(180deg); }
+.slash-right { transform: translate(-50%, -50%) rotate(0deg); }
+
+@keyframes slashFlash {
+    0% { opacity: 0; transform: scaleX(.35) scaleY(.7); }
+    25% { opacity: 1; transform: scaleX(1.2) scaleY(1); }
+    100% { opacity: 0; transform: scaleX(1.55) scaleY(.75); }
+}
+
+.damage-number {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 260;
+    pointer-events: none;
+    font-size: 20px;
+    font-weight: 1000;
+    color: #fff;
+    text-shadow:
+        0 2px 0 rgba(0,0,0,.85),
+        0 0 10px rgba(0,0,0,.9);
+    animation: damageFloat 0.65s ease-out forwards;
+}
+
+.damage-normal { color: #ffd166; }
+.damage-skill { color: #7dd3fc; font-size: 23px; }
+.damage-heal { color: #4ade80; }
+.damage-miss { color: #cbd5e1; font-size: 16px; }
+
+@keyframes damageFloat {
+    0% { opacity: 0; transform: translate(-50%, -30%) scale(.75); }
+    18% { opacity: 1; transform: translate(-50%, -70%) scale(1.18); }
+    100% { opacity: 0; transform: translate(-50%, -125%) scale(.92); }
+}
+
+.attack-effect {
+    width: 86px;
+    height: 86px;
+    border: none;
+    background:
+        radial-gradient(circle, rgba(255,255,255,.16) 0 18%, transparent 20%),
+        conic-gradient(from 45deg, transparent 0 58%, rgba(255,226,122,.95) 63%, transparent 72%);
+    animation: playerAttackSwing 0.16s ease-out forwards;
+}
+
+.attack-up { transform: translate(-50%, -50%) rotate(-90deg); }
+.attack-down { transform: translate(-50%, -50%) rotate(90deg); }
+.attack-left { transform: translate(-50%, -50%) rotate(180deg); }
+.attack-right { transform: translate(-50%, -50%) rotate(0deg); }
+
+@keyframes playerAttackSwing {
+    from { opacity: .95; scale: .75; }
+    to { opacity: 0; scale: 1.25; }
+}
+
+
+/* =========================================================
+   Weapon Image / Equipped Motion Update
+   app.css 맨 아래에 추가
+   ========================================================= */
+.player-combat-layer {
+    position: relative;
+    width: 62px;
+    height: 62px;
+    margin: 0 auto;
+}
+
+.player-combat-layer .player-avatar-sprite {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+.weapon-sprite {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    left: 50%;
+    top: 50%;
+    transform-origin: 50% 82%;
+    pointer-events: none;
+    z-index: 3;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,.7));
+    image-rendering: auto;
+}
+
+.weapon-fist { display: none; }
+.weapon-sword { width: 44px; height: 44px; }
+.weapon-staff { width: 50px; height: 50px; }
+.weapon-bow { width: 48px; height: 48px; }
+.weapon-dagger { width: 36px; height: 36px; }
+.weapon-goblin-sword { width: 46px; height: 46px; }
+.weapon-greatsword { width: 56px; height: 56px; }
+
+.weapon-dir-down { transform: translate(8px, -14px) rotate(22deg); }
+.weapon-dir-up { transform: translate(-48px, -32px) rotate(205deg); }
+.weapon-dir-left { transform: translate(-48px, -16px) rotate(-58deg); }
+.weapon-dir-right { transform: translate(10px, -16px) rotate(58deg); }
+
+.weapon-dir-down.weapon-bow { transform: translate(10px, -16px) rotate(14deg); }
+.weapon-dir-up.weapon-bow { transform: translate(-44px, -24px) rotate(194deg); }
+.weapon-dir-left.weapon-bow { transform: translate(-50px, -18px) rotate(-86deg); }
+.weapon-dir-right.weapon-bow { transform: translate(10px, -18px) rotate(86deg); }
+
+.weapon-dir-down.weapon-staff { transform: translate(8px, -20px) rotate(12deg); }
+.weapon-dir-up.weapon-staff { transform: translate(-48px, -34px) rotate(192deg); }
+.weapon-dir-left.weapon-staff { transform: translate(-50px, -22px) rotate(-48deg); }
+.weapon-dir-right.weapon-staff { transform: translate(8px, -22px) rotate(48deg); }
+
+.weapon-attacking.weapon-dir-down { animation: weaponSwingDown .18s ease-out; }
+.weapon-attacking.weapon-dir-up { animation: weaponSwingUp .18s ease-out; }
+.weapon-attacking.weapon-dir-left { animation: weaponSwingLeft .18s ease-out; }
+.weapon-attacking.weapon-dir-right { animation: weaponSwingRight .18s ease-out; }
+
+.weapon-attacking.weapon-bow { animation-duration: .22s; }
+.weapon-attacking.weapon-staff { animation-duration: .24s; }
+.weapon-attacking.weapon-greatsword { animation-duration: .22s; }
+
+@keyframes weaponSwingDown {
+    0% { transform: translate(2px, -24px) rotate(-35deg) scale(.94); }
+    55% { transform: translate(18px, -6px) rotate(92deg) scale(1.08); }
+    100% { transform: translate(8px, -14px) rotate(22deg) scale(1); }
+}
+
+@keyframes weaponSwingUp {
+    0% { transform: translate(-40px, -18px) rotate(140deg) scale(.94); }
+    55% { transform: translate(-58px, -44px) rotate(270deg) scale(1.08); }
+    100% { transform: translate(-48px, -32px) rotate(205deg) scale(1); }
+}
+
+@keyframes weaponSwingLeft {
+    0% { transform: translate(-32px, -28px) rotate(22deg) scale(.94); }
+    55% { transform: translate(-58px, -10px) rotate(-125deg) scale(1.08); }
+    100% { transform: translate(-48px, -16px) rotate(-58deg) scale(1); }
+}
+
+@keyframes weaponSwingRight {
+    0% { transform: translate(2px, -28px) rotate(-22deg) scale(.94); }
+    55% { transform: translate(22px, -8px) rotate(125deg) scale(1.08); }
+    100% { transform: translate(10px, -16px) rotate(58deg) scale(1); }
+}
+
+.player-attacking .player-avatar-sprite {
+    animation: playerAttackBody .16s ease-out;
+}
+
+@keyframes playerAttackBody {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    45% { transform: translate(-50%, -54%) scale(1.05); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+.attack-effect.attack-weapon-staff {
+    background:
+        radial-gradient(circle, rgba(125,211,252,.22) 0 20%, transparent 22%),
+        conic-gradient(from 45deg, transparent 0 54%, rgba(125,211,252,.95) 60%, rgba(192,132,252,.9) 68%, transparent 76%);
+}
+
+.attack-effect.attack-weapon-bow {
+    width: 110px;
+    height: 34px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.95), rgba(96,165,250,.9), transparent);
+}
+
+.attack-effect.attack-weapon-dagger {
+    width: 64px;
+    height: 64px;
+    background: conic-gradient(from 20deg, transparent 0 62%, rgba(248,250,252,.95) 65%, transparent 73%);
+}
+
+.attack-effect.attack-weapon-greatsword,
+.attack-effect.attack-weapon-goblin-sword {
+    width: 104px;
+    height: 104px;
+}
+
+.equipment-visual-slot { gap: 8px; }
+.equipped-weapon-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(0,0,0,.28);
+    border: 1px solid rgba(245, 201, 90, .25);
+}
+.equipped-weapon-preview img {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,.65));
+}
+.equipped-weapon-preview span,
+.equipped-weapon-preview small {
+    display: block;
+}
+.equipped-weapon-preview small {
+    color: var(--rpg-muted, #b9a98d);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+
+/* =========================================================
+   Weapon Visibility Hotfix
+   - 장착 무기가 캐릭터 손 옆에 확실히 보이도록 위치/크기/z-index 재정의
+   - app.css 맨 아래에 있어야 기존 스타일보다 우선 적용됩니다.
+   ========================================================= */
+.player {
+    overflow: visible !important;
+}
+
+.player-combat-layer {
+    position: relative !important;
+    width: 76px !important;
+    height: 76px !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+}
+
+.player-combat-layer .player-avatar-sprite {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 10 !important;
+}
+
+.weapon-sprite {
+    position: absolute !important;
+    display: block !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: 54px !important;
+    height: 54px !important;
+    object-fit: contain !important;
+    pointer-events: none !important;
+    z-index: 30 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    filter: drop-shadow(0 4px 3px rgba(0,0,0,.85)) drop-shadow(0 0 4px rgba(245,201,90,.45)) !important;
+    image-rendering: auto !important;
+}
+
+.weapon-sword { width: 56px !important; height: 56px !important; }
+.weapon-staff { width: 62px !important; height: 62px !important; }
+.weapon-bow { width: 60px !important; height: 60px !important; }
+.weapon-dagger { width: 44px !important; height: 44px !important; }
+.weapon-goblin-sword { width: 60px !important; height: 60px !important; }
+.weapon-greatsword { width: 72px !important; height: 72px !important; }
+
+/* 방향별로 손에 들고 있는 위치 */
+.weapon-dir-down { transform: translate(5px, -14px) rotate(34deg) !important; }
+.weapon-dir-up { transform: translate(-53px, -46px) rotate(210deg) !important; }
+.weapon-dir-left { transform: translate(-61px, -22px) rotate(-64deg) !important; }
+.weapon-dir-right { transform: translate(8px, -22px) rotate(64deg) !important; }
+
+.weapon-dir-down.weapon-staff { transform: translate(8px, -22px) rotate(18deg) !important; }
+.weapon-dir-up.weapon-staff { transform: translate(-58px, -52px) rotate(196deg) !important; }
+.weapon-dir-left.weapon-staff { transform: translate(-66px, -28px) rotate(-52deg) !important; }
+.weapon-dir-right.weapon-staff { transform: translate(7px, -28px) rotate(52deg) !important; }
+
+.weapon-dir-down.weapon-bow { transform: translate(2px, -19px) rotate(10deg) !important; }
+.weapon-dir-up.weapon-bow { transform: translate(-56px, -43px) rotate(190deg) !important; }
+.weapon-dir-left.weapon-bow { transform: translate(-64px, -28px) rotate(-88deg) !important; }
+.weapon-dir-right.weapon-bow { transform: translate(2px, -28px) rotate(88deg) !important; }
+
+.weapon-dir-down.weapon-dagger { transform: translate(14px, -10px) rotate(45deg) !important; }
+.weapon-dir-up.weapon-dagger { transform: translate(-40px, -36px) rotate(220deg) !important; }
+.weapon-dir-left.weapon-dagger { transform: translate(-48px, -14px) rotate(-78deg) !important; }
+.weapon-dir-right.weapon-dagger { transform: translate(12px, -14px) rotate(78deg) !important; }
+
+.weapon-attacking.weapon-dir-down { animation: visibleWeaponSwingDown .22s ease-out !important; }
+.weapon-attacking.weapon-dir-up { animation: visibleWeaponSwingUp .22s ease-out !important; }
+.weapon-attacking.weapon-dir-left { animation: visibleWeaponSwingLeft .22s ease-out !important; }
+.weapon-attacking.weapon-dir-right { animation: visibleWeaponSwingRight .22s ease-out !important; }
+
+@keyframes visibleWeaponSwingDown {
+    0% { transform: translate(-8px, -28px) rotate(-42deg) scale(.95); }
+    58% { transform: translate(23px, 0px) rotate(118deg) scale(1.16); }
+    100% { transform: translate(5px, -14px) rotate(34deg) scale(1); }
+}
+@keyframes visibleWeaponSwingUp {
+    0% { transform: translate(-38px, -20px) rotate(130deg) scale(.95); }
+    58% { transform: translate(-68px, -58px) rotate(285deg) scale(1.16); }
+    100% { transform: translate(-53px, -46px) rotate(210deg) scale(1); }
+}
+@keyframes visibleWeaponSwingLeft {
+    0% { transform: translate(-35px, -34px) rotate(20deg) scale(.95); }
+    58% { transform: translate(-73px, -8px) rotate(-142deg) scale(1.16); }
+    100% { transform: translate(-61px, -22px) rotate(-64deg) scale(1); }
+}
+@keyframes visibleWeaponSwingRight {
+    0% { transform: translate(0px, -34px) rotate(-20deg) scale(.95); }
+    58% { transform: translate(27px, -8px) rotate(142deg) scale(1.16); }
+    100% { transform: translate(8px, -22px) rotate(64deg) scale(1); }
+}
+
+.equipped-weapon-preview img {
+    width: 42px !important;
+    height: 42px !important;
+    object-fit: contain !important;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,.8));
+}

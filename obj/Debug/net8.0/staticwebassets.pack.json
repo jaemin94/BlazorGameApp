@@ -101,6 +101,30 @@
       "PackagePath": "staticwebassets\\images\\player\\up.png"
     },
     {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\weapon\\bow.svg",
+      "PackagePath": "staticwebassets\\images\\weapon\\bow.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\weapon\\dagger.svg",
+      "PackagePath": "staticwebassets\\images\\weapon\\dagger.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\weapon\\goblin_sword.svg",
+      "PackagePath": "staticwebassets\\images\\weapon\\goblin_sword.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\weapon\\greatsword.svg",
+      "PackagePath": "staticwebassets\\images\\weapon\\greatsword.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\weapon\\staff.svg",
+      "PackagePath": "staticwebassets\\images\\weapon\\staff.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\weapon\\sword.svg",
+      "PackagePath": "staticwebassets\\images\\weapon\\sword.svg"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BlazorApp.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },
