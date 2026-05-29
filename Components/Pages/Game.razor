@@ -109,7 +109,6 @@ else
                     <div class="custom-avatar hud-avatar outfit-@myOutfitStyle accessory-@myAccessory" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
                         <div class="avatar-head">
                             <div class="avatar-hair hair-@myHairStyle"></div>
-                            <span class="avatar-face">@myFaceIcon</span>
                         </div>
                         <div class="avatar-body"><span class="armor-mark"></span></div>
                     </div>
@@ -157,7 +156,6 @@ else
             <div class="custom-avatar outfit-@myOutfitStyle accessory-@myAccessory" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
                 <div class="avatar-head">
                     <div class="avatar-hair hair-@myHairStyle"></div>
-                    <span class="avatar-face">@myFaceIcon</span>
                 </div>
                 <div class="avatar-body"><span class="armor-mark"></span></div>
             </div>
@@ -170,7 +168,6 @@ else
                 <div class="custom-avatar outfit-@player.OutfitStyle accessory-@player.Accessory" style="--skin:@player.SkinColor; --hair:@player.HairColor; --outfit:@player.OutfitColor;">
                     <div class="avatar-head">
                         <div class="avatar-hair hair-@player.HairStyle"></div>
-                        <span class="avatar-face">@player.FaceIcon</span>
                     </div>
                     <div class="avatar-body"><span class="armor-mark"></span></div>
                 </div>
@@ -365,7 +362,6 @@ else
                             <div class="custom-avatar big-avatar outfit-@myOutfitStyle accessory-@myAccessory" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
                                 <div class="avatar-head">
                                     <div class="avatar-hair hair-@myHairStyle"></div>
-                                    <span class="avatar-face">@myFaceIcon</span>
                                 </div>
                                 <div class="avatar-body"><span class="armor-mark"></span></div>
                             </div>
@@ -373,7 +369,7 @@ else
                         <div class="preview-info">
                             <strong>@playerName</strong>
                             <span>@GetJobName(myJob) · @GetOutfitStyleName(myOutfitStyle)</span>
-                            <small>색칠놀이 느낌을 줄이고, 직업 아바타 프리셋 + 장비 스타일로 구성했습니다.</small>
+                            <small>얼굴 이모지 없이 픽셀 캐릭터 파츠로 구성했습니다.</small>
                         </div>
                     </div>
 
@@ -454,17 +450,6 @@ else
                         </div>
                     </div>
 
-                    <div class="custom-section full-row">
-                        <strong>표정</strong>
-                        <div class="choice-buttons face-buttons">
-                            @foreach (var face in faceIcons)
-                            {
-                                var selectedFace = face;
-                                <button class="@(myFaceIcon == selectedFace ? "active" : "")" @onclick="() => myFaceIcon = selectedFace">@selectedFace</button>
-                            }
-                        </div>
-                    </div>
-
                     <button class="save-custom-button full-row" @onclick="SaveCharacterAppearance">외형 저장</button>
                     <p class="hint-text full-row">C 키로 창을 열고 닫을 수 있습니다. 저장해야 다른 플레이어에게도 적용됩니다.</p>
                 </div>
@@ -505,14 +490,12 @@ else
     private string myHairColor = "#2b1b12";
     private string myOutfitColor = "#2563eb";
     private string myHairStyle = "short";
-    private string myFaceIcon = "🙂";
     private string myOutfitStyle = "adventurer";
     private string myAccessory = "none";
 
     private readonly List<string> skinColors = new() { "#f2c7a5", "#d8a47f", "#8d5524", "#ffe0bd", "#b7795f" };
     private readonly List<string> hairColors = new() { "#2b1b12", "#7c2d12", "#facc15", "#111827", "#f8fafc", "#78350f", "#991b1b" };
     private readonly List<string> outfitColors = new() { "#2563eb", "#16a34a", "#dc2626", "#7c3aed", "#f97316", "#0f172a", "#92400e", "#0891b2" };
-    private readonly List<string> faceIcons = new() { "🙂", "😐", "😎", "😡", "😊", "🤠", "😤", "🧐" };
     private readonly List<string> outfitStyles = new() { "adventurer", "armor", "robe", "leather", "ranger" };
     private readonly List<string> hairStyles = new() { "short", "long", "spiky", "bob", "ponytail", "hood" };
     private readonly List<string> accessories = new() { "none", "cape", "pauldron", "hood", "scarf" };
@@ -681,7 +664,6 @@ else
             myHairColor = me.HairColor;
             myOutfitColor = me.OutfitColor;
             myHairStyle = me.HairStyle;
-            myFaceIcon = me.FaceIcon;
             myOutfitStyle = me.OutfitStyle;
             myAccessory = me.Accessory;
         }
@@ -853,23 +835,23 @@ else
         {
             case "warrior":
                 mySkinColor = "#d8a47f"; myHairColor = "#2b1b12"; myOutfitColor = "#dc2626";
-                myHairStyle = "short"; myFaceIcon = "😤"; myOutfitStyle = "armor"; myAccessory = "pauldron";
+                myHairStyle = "short"; myOutfitStyle = "armor"; myAccessory = "pauldron";
                 break;
             case "mage":
                 mySkinColor = "#ffe0bd"; myHairColor = "#f8fafc"; myOutfitColor = "#7c3aed";
-                myHairStyle = "hood"; myFaceIcon = "🧐"; myOutfitStyle = "robe"; myAccessory = "hood";
+                myHairStyle = "hood"; myOutfitStyle = "robe"; myAccessory = "hood";
                 break;
             case "thief":
                 mySkinColor = "#d8a47f"; myHairColor = "#111827"; myOutfitColor = "#0f172a";
-                myHairStyle = "spiky"; myFaceIcon = "😎"; myOutfitStyle = "leather"; myAccessory = "scarf";
+                myHairStyle = "spiky"; myOutfitStyle = "leather"; myAccessory = "scarf";
                 break;
             case "archer":
                 mySkinColor = "#f2c7a5"; myHairColor = "#78350f"; myOutfitColor = "#16a34a";
-                myHairStyle = "ponytail"; myFaceIcon = "😊"; myOutfitStyle = "ranger"; myAccessory = "cape";
+                myHairStyle = "ponytail"; myOutfitStyle = "ranger"; myAccessory = "cape";
                 break;
             default:
                 mySkinColor = "#f2c7a5"; myHairColor = "#2b1b12"; myOutfitColor = "#2563eb";
-                myHairStyle = "short"; myFaceIcon = "🙂"; myOutfitStyle = "adventurer"; myAccessory = "none";
+                myHairStyle = "short"; myOutfitStyle = "adventurer"; myAccessory = "none";
                 break;
         }
     }
@@ -912,7 +894,6 @@ else
                 myHairColor,
                 myOutfitColor,
                 myHairStyle,
-                myFaceIcon,
                 myOutfitStyle,
                 myAccessory
             );

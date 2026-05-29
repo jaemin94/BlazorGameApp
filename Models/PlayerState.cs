@@ -23,7 +23,6 @@ public class PlayerState
     public string HairColor { get; set; } = "#2b1b12";
     public string OutfitColor { get; set; } = "#2563eb";
     public string HairStyle { get; set; } = "short";
-    public string FaceIcon { get; set; } = "🙂";
     public string OutfitStyle { get; set; } = "adventurer";
     public string Accessory { get; set; } = "none";
 

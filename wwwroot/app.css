@@ -1646,3 +1646,68 @@ html, body {
     .premium-preview { grid-row: auto; min-height: 260px; }
     .custom-section.full-row, .full-row { grid-column: auto; }
 }
+
+
+/* =========================================================
+   No Emoji Pixel Face Override
+   - 얼굴 이모지(.avatar-face)를 쓰지 않고 CSS 눈/코/입을 직접 그립니다.
+   - 기존 custom-avatar 구조를 유지하므로 Game.razor 전체 교체 없이 바로 적용됩니다.
+   ========================================================= */
+.avatar-face {
+    display: none !important;
+}
+
+.avatar-head::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 12px;
+    width: 4px;
+    height: 4px;
+    background: #111827;
+    border-radius: 1px;
+    box-shadow: 10px 0 0 #111827;
+    z-index: 20;
+}
+
+.avatar-head::after {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 20px;
+    width: 10px;
+    height: 3px;
+    background: rgba(55, 20, 10, .8);
+    border-radius: 999px;
+    z-index: 20;
+}
+
+.custom-avatar.big-avatar .avatar-head::before {
+    left: 12px;
+    top: 24px;
+    width: 7px;
+    height: 7px;
+    box-shadow: 20px 0 0 #111827;
+}
+
+.custom-avatar.big-avatar .avatar-head::after {
+    left: 18px;
+    top: 40px;
+    width: 20px;
+    height: 5px;
+}
+
+.custom-avatar.hud-avatar .avatar-head::before {
+    left: 5px;
+    top: 11px;
+    width: 3px;
+    height: 3px;
+    box-shadow: 9px 0 0 #111827;
+}
+
+.custom-avatar.hud-avatar .avatar-head::after {
+    left: 8px;
+    top: 19px;
+    width: 9px;
+    height: 2px;
+}

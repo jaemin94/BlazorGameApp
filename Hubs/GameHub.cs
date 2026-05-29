@@ -229,12 +229,13 @@ public class GameHub : Hub
     }
 
     // 캐릭터 외형 변경
+    // 캐릭터 외형 변경
+    // 얼굴 이모지는 사용하지 않고 CSS 픽셀 얼굴로 렌더링합니다.
     public async Task UpdateCharacterAppearance(
         string skinColor,
         string hairColor,
         string outfitColor,
         string hairStyle,
-        string faceIcon,
         string outfitStyle,
         string accessory)
     {
@@ -244,7 +245,6 @@ public class GameHub : Hub
         var allowedHair = new[] { "#2b1b12", "#7c2d12", "#facc15", "#111827", "#f8fafc", "#78350f", "#991b1b" };
         var allowedOutfit = new[] { "#2563eb", "#16a34a", "#dc2626", "#7c3aed", "#f97316", "#0f172a", "#92400e", "#0891b2" };
         var allowedHairStyle = new[] { "short", "long", "spiky", "bob", "ponytail", "hood" };
-        var allowedFace = new[] { "🙂", "😐", "😎", "😡", "😊", "🤠", "😤", "🧐" };
         var allowedOutfitStyle = new[] { "adventurer", "armor", "robe", "leather", "ranger" };
         var allowedAccessory = new[] { "none", "cape", "pauldron", "hood", "scarf" };
 
@@ -252,7 +252,6 @@ public class GameHub : Hub
         if (allowedHair.Contains(hairColor)) player.HairColor = hairColor;
         if (allowedOutfit.Contains(outfitColor)) player.OutfitColor = outfitColor;
         if (allowedHairStyle.Contains(hairStyle)) player.HairStyle = hairStyle;
-        if (allowedFace.Contains(faceIcon)) player.FaceIcon = faceIcon;
         if (allowedOutfitStyle.Contains(outfitStyle)) player.OutfitStyle = outfitStyle;
         if (allowedAccessory.Contains(accessory)) player.Accessory = accessory;
 
