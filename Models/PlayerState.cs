@@ -26,6 +26,10 @@ public class PlayerState
     public string OutfitStyle { get; set; } = "adventurer";
     public string Accessory { get; set; } = "none";
 
+    // 실제 화면에 보이는 캐릭터 프리셋 이미지
+    // CSS 블록 캐릭터 대신 SVG 스프라이트를 사용합니다.
+    public string AvatarPreset { get; set; } = "beginner_01";
+
     public int Str { get; set; } = 1;
     public int Def { get; set; } = 1;
     public int Int { get; set; } = 1;

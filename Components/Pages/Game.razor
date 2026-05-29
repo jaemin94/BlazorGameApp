@@ -106,12 +106,7 @@ else
         <div class="status-box premium-hud">
             <div class="hud-header">
                 <div class="hud-portrait">
-                    <div class="custom-avatar hud-avatar outfit-@myOutfitStyle accessory-@myAccessory" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
-                        <div class="avatar-head">
-                            <div class="avatar-hair hair-@myHairStyle"></div>
-                        </div>
-                        <div class="avatar-body"><span class="armor-mark"></span></div>
-                    </div>
+                    <img src="@GetAvatarImage(myAvatarPreset)" class="avatar-sprite hud-avatar-sprite" alt="내 캐릭터" />
                 </div>
                 <div class="hud-title">
                     <strong>@playerName</strong>
@@ -153,24 +148,14 @@ else
 
         <div class="player @(isDashing ? "dash-effect" : "")" style="left:@($"{myX}px"); top:@($"{myY}px");">
             <div class="name">@playerName</div>
-            <div class="custom-avatar outfit-@myOutfitStyle accessory-@myAccessory" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
-                <div class="avatar-head">
-                    <div class="avatar-hair hair-@myHairStyle"></div>
-                </div>
-                <div class="avatar-body"><span class="armor-mark"></span></div>
-            </div>
+            <img src="@GetAvatarImage(myAvatarPreset)" class="avatar-sprite player-avatar-sprite" alt="내 캐릭터" />
         </div>
 
         @foreach (var player in players.Where(p => p.Name != playerName && p.CurrentMap == myCurrentMap))
         {
             <div class="player" style="left:@($"{player.X}px"); top:@($"{player.Y}px");">
                 <div class="name">@player.Name</div>
-                <div class="custom-avatar outfit-@player.OutfitStyle accessory-@player.Accessory" style="--skin:@player.SkinColor; --hair:@player.HairColor; --outfit:@player.OutfitColor;">
-                    <div class="avatar-head">
-                        <div class="avatar-hair hair-@player.HairStyle"></div>
-                    </div>
-                    <div class="avatar-body"><span class="armor-mark"></span></div>
-                </div>
+                <img src="@GetAvatarImage(player.AvatarPreset)" class="avatar-sprite player-avatar-sprite" alt="플레이어 캐릭터" />
             </div>
         }
 
@@ -338,120 +323,95 @@ else
                                     @for (int slot = 1; slot <= 9; slot++)
                                     {
                                         var currentSlot = slot;
-                                        <button @onclick="async () => await SetSkillSlot(currentSlot, skill.SkillId)">@slot</button>
+                                        var isAssignedHere = mySkillSlots.Any(s => s.Slot == currentSlot && s.SkillId == skill.SkillId);
+
+                                        <button class="@(isAssignedHere ? "assigned-slot-btn" : "")"
+                                                @onclick="async () => await SetSkillSlot(currentSlot, skill.SkillId)">
+                                            @slot
+                                        </button>
                                     }
                                 </div>
                             }
                         </div>
                     }
+
+
+                    <div class="assigned-slot-panel">
+                        <h5>현재 퀵슬롯</h5>
+
+                        @foreach (var slot in mySkillSlots.OrderBy(s => s.Slot))
+                        {
+                            <div class="assigned-slot-row @(string.IsNullOrWhiteSpace(slot.SkillId) ? "empty" : "filled")">
+                                <div>
+                                    <strong>@slot.Slot 번</strong>
+                                    <span>@(string.IsNullOrWhiteSpace(slot.SkillId) ? "비어있음" : SkillDatabase.GetName(slot.SkillId))</span>
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(slot.SkillId))
+                                {
+                                    <button class="slot-remove-btn"
+                                            title="퀵슬롯 해제"
+                                            @onclick="async () => await RemoveSkillSlot(slot.Slot)">
+                                        해제
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         }
 
         @if (showCustomizeWindow)
         {
-            <div class="rpg-window customize-window premium-customize-window">
-                <div class="window-title">
+            <!-- =========================================================
+                 캐릭터 커스터마이징 창
+                 - 기존 CSS 블록 캐릭터 제거
+                 - SVG 스프라이트 프리셋 방식
+                 - 미리보기 + 프리셋 선택 + 저장
+                 ========================================================= -->
+            <div class="rpg-window customize-window sprite-customize-window">
+                <div class="window-title compact-window-title">
                     <h4>캐릭터 커스터마이징</h4>
                     <button class="x-button" @onclick="() => showCustomizeWindow = false">X</button>
                 </div>
 
-                <div class="scroll-body customize-grid-layout">
-                    <div class="custom-preview premium-preview">
-                        <div class="preview-stage">
-                            <div class="custom-avatar big-avatar outfit-@myOutfitStyle accessory-@myAccessory" style="--skin:@mySkinColor; --hair:@myHairColor; --outfit:@myOutfitColor;">
-                                <div class="avatar-head">
-                                    <div class="avatar-hair hair-@myHairStyle"></div>
-                                </div>
-                                <div class="avatar-body"><span class="armor-mark"></span></div>
-                            </div>
+                <div class="sprite-customize-body">
+                    <div class="sprite-preview-panel">
+                        <div class="sprite-preview-stage">
+                            <img src="@GetAvatarImage(myAvatarPreset)"
+                                 class="avatar-sprite preview-avatar-sprite"
+                                 alt="캐릭터 미리보기" />
                         </div>
-                        <div class="preview-info">
-                            <strong>@playerName</strong>
-                            <span>@GetJobName(myJob) · @GetOutfitStyleName(myOutfitStyle)</span>
-                            <small>얼굴 이모지 없이 픽셀 캐릭터 파츠로 구성했습니다.</small>
+
+                        <div class="sprite-preview-info">
+                            <strong>@GetAvatarName(myAvatarPreset)</strong>
+                            <span>@playerName · @GetJobName(myJob)</span>
                         </div>
                     </div>
 
-                    <div class="custom-section full-row">
-                        <strong>추천 프리셋</strong>
-                        <div class="preset-grid">
-                            <button @onclick='() => ApplyAppearancePreset("beginner")'>초보 모험가</button>
-                            <button @onclick='() => ApplyAppearancePreset("warrior")'>중갑 전사</button>
-                            <button @onclick='() => ApplyAppearancePreset("mage")'>신비한 마법사</button>
-                            <button @onclick='() => ApplyAppearancePreset("thief")'>그림자 도적</button>
-                            <button @onclick='() => ApplyAppearancePreset("archer")'>숲의 궁수</button>
-                        </div>
-                    </div>
+                    <div class="sprite-preset-section">
+                        <strong>외형 프리셋</strong>
+                        <p>블록 조립형 대신 완성된 캐릭터 스프라이트를 선택합니다.</p>
 
-                    <div class="custom-section">
-                        <strong>피부</strong>
-                        <div class="color-buttons">
-                            @foreach (var color in skinColors)
+                        <div class="sprite-preset-grid">
+                            @foreach (var preset in avatarPresets)
                             {
-                                var selectedColor = color;
-                                <button class="color-dot @(mySkinColor == selectedColor ? "selected" : "")" style="background:@selectedColor" @onclick="() => mySkinColor = selectedColor"></button>
+                                var selectedPreset = preset;
+                                <button class="sprite-preset-card @(myAvatarPreset == selectedPreset.Id ? "active" : "")"
+                                        @onclick="() => ApplyAvatarPreset(selectedPreset.Id)">
+                                    <img src="@GetAvatarImage(selectedPreset.Id)" alt="@selectedPreset.Name" />
+                                    <span>@selectedPreset.Name</span>
+                                    <small>@selectedPreset.Desc</small>
+                                </button>
                             }
                         </div>
                     </div>
+                </div>
 
-                    <div class="custom-section">
-                        <strong>머리색</strong>
-                        <div class="color-buttons">
-                            @foreach (var color in hairColors)
-                            {
-                                var selectedColor = color;
-                                <button class="color-dot @(myHairColor == selectedColor ? "selected" : "")" style="background:@selectedColor" @onclick="() => myHairColor = selectedColor"></button>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="custom-section">
-                        <strong>의상색</strong>
-                        <div class="color-buttons">
-                            @foreach (var color in outfitColors)
-                            {
-                                var selectedColor = color;
-                                <button class="color-dot @(myOutfitColor == selectedColor ? "selected" : "")" style="background:@selectedColor" @onclick="() => myOutfitColor = selectedColor"></button>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="custom-section">
-                        <strong>의상 타입</strong>
-                        <div class="choice-buttons compact-choice">
-                            @foreach (var style in outfitStyles)
-                            {
-                                var selectedStyle = style;
-                                <button class="@(myOutfitStyle == selectedStyle ? "active" : "")" @onclick="() => myOutfitStyle = selectedStyle">@GetOutfitStyleName(selectedStyle)</button>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="custom-section">
-                        <strong>헤어</strong>
-                        <div class="choice-buttons compact-choice">
-                            @foreach (var hair in hairStyles)
-                            {
-                                var selectedHair = hair;
-                                <button class="@(myHairStyle == selectedHair ? "active" : "")" @onclick="() => myHairStyle = selectedHair">@GetHairStyleName(selectedHair)</button>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="custom-section">
-                        <strong>장식</strong>
-                        <div class="choice-buttons compact-choice">
-                            @foreach (var accessory in accessories)
-                            {
-                                var selectedAccessory = accessory;
-                                <button class="@(myAccessory == selectedAccessory ? "active" : "")" @onclick="() => myAccessory = selectedAccessory">@GetAccessoryName(selectedAccessory)</button>
-                            }
-                        </div>
-                    </div>
-
-                    <button class="save-custom-button full-row" @onclick="SaveCharacterAppearance">외형 저장</button>
-                    <p class="hint-text full-row">C 키로 창을 열고 닫을 수 있습니다. 저장해야 다른 플레이어에게도 적용됩니다.</p>
+                <div class="customize-footer">
+                    <button class="save-custom-button" @onclick="SaveCharacterAppearance">외형 저장</button>
+                    <button class="cancel-custom-button" @onclick="() => showCustomizeWindow = false">닫기</button>
                 </div>
             </div>
         }
@@ -492,6 +452,7 @@ else
     private string myHairStyle = "short";
     private string myOutfitStyle = "adventurer";
     private string myAccessory = "none";
+    private string myAvatarPreset = "beginner_01";
 
     private readonly List<string> skinColors = new() { "#f2c7a5", "#d8a47f", "#8d5524", "#ffe0bd", "#b7795f" };
     private readonly List<string> hairColors = new() { "#2b1b12", "#7c2d12", "#facc15", "#111827", "#f8fafc", "#78350f", "#991b1b" };
@@ -499,6 +460,21 @@ else
     private readonly List<string> outfitStyles = new() { "adventurer", "armor", "robe", "leather", "ranger" };
     private readonly List<string> hairStyles = new() { "short", "long", "spiky", "bob", "ponytail", "hood" };
     private readonly List<string> accessories = new() { "none", "cape", "pauldron", "hood", "scarf" };
+
+    // 커스터마이징에서 선택 가능한 캐릭터 이미지 프리셋
+    private readonly List<(string Id, string Name, string Desc)> avatarPresets = new()
+    {
+        ("beginner_01", "초보자 A", "기본 모험가"),
+        ("beginner_02", "초보자 B", "가벼운 여행복"),
+        ("warrior_01", "전사 A", "검과 중갑"),
+        ("warrior_02", "전사 B", "붉은 기사"),
+        ("mage_01", "마법사 A", "푸른 로브"),
+        ("mage_02", "마법사 B", "보라 로브"),
+        ("thief_01", "도적 A", "검은 가죽복"),
+        ("thief_02", "도적 B", "후드 도적"),
+        ("archer_01", "궁수 A", "초록 사냥복"),
+        ("archer_02", "궁수 B", "갈색 사냥복")
+    };
     private bool joined = false;
 
     private int myX = 400;
@@ -666,6 +642,7 @@ else
             myHairStyle = me.HairStyle;
             myOutfitStyle = me.OutfitStyle;
             myAccessory = me.Accessory;
+            myAvatarPreset = string.IsNullOrWhiteSpace(me.AvatarPreset) ? "beginner_01" : me.AvatarPreset;
         }
         InvokeAsync(StateHasChanged);
     }
@@ -829,31 +806,26 @@ else
     }
 
 
-    private void ApplyAppearancePreset(string preset)
+    // 캐릭터 이미지 프리셋 선택
+    // 실제 화면에서는 이 값으로 /images/player/customize/*.svg 파일을 표시합니다.
+    private void ApplyAvatarPreset(string presetId)
     {
-        switch (preset)
-        {
-            case "warrior":
-                mySkinColor = "#d8a47f"; myHairColor = "#2b1b12"; myOutfitColor = "#dc2626";
-                myHairStyle = "short"; myOutfitStyle = "armor"; myAccessory = "pauldron";
-                break;
-            case "mage":
-                mySkinColor = "#ffe0bd"; myHairColor = "#f8fafc"; myOutfitColor = "#7c3aed";
-                myHairStyle = "hood"; myOutfitStyle = "robe"; myAccessory = "hood";
-                break;
-            case "thief":
-                mySkinColor = "#d8a47f"; myHairColor = "#111827"; myOutfitColor = "#0f172a";
-                myHairStyle = "spiky"; myOutfitStyle = "leather"; myAccessory = "scarf";
-                break;
-            case "archer":
-                mySkinColor = "#f2c7a5"; myHairColor = "#78350f"; myOutfitColor = "#16a34a";
-                myHairStyle = "ponytail"; myOutfitStyle = "ranger"; myAccessory = "cape";
-                break;
-            default:
-                mySkinColor = "#f2c7a5"; myHairColor = "#2b1b12"; myOutfitColor = "#2563eb";
-                myHairStyle = "short"; myOutfitStyle = "adventurer"; myAccessory = "none";
-                break;
-        }
+        if (avatarPresets.Any(p => p.Id == presetId))
+            myAvatarPreset = presetId;
+    }
+
+    private string GetAvatarImage(string presetId)
+    {
+        if (string.IsNullOrWhiteSpace(presetId))
+            presetId = "beginner_01";
+
+        return $"/images/player/customize/{presetId}.svg";
+    }
+
+    private string GetAvatarName(string presetId)
+    {
+        var preset = avatarPresets.FirstOrDefault(p => p.Id == presetId);
+        return string.IsNullOrWhiteSpace(preset.Name) ? "초보자 A" : preset.Name;
     }
 
     private string GetOutfitStyleName(string style) => style switch
@@ -890,6 +862,7 @@ else
         {
             await hubConnection.SendAsync(
                 "UpdateCharacterAppearance",
+                myAvatarPreset,
                 mySkinColor,
                 myHairColor,
                 myOutfitColor,
@@ -940,9 +913,22 @@ else
         if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("LearnOrLevelUpSkill", skillId);
     }
 
+    // 스킬을 1~9 퀵슬롯에 등록
     private async Task SetSkillSlot(int slot, string skillId)
     {
-        if (hubConnection?.State == HubConnectionState.Connected) await hubConnection.SendAsync("SetSkillSlot", slot, skillId);
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("SetSkillSlot", slot, skillId);
+    }
+
+    // 스킬창의 현재 퀵슬롯 목록에서 슬롯 해제
+    private async Task RemoveSkillSlot(int slot)
+    {
+        if (hubConnection?.State == HubConnectionState.Connected)
+            await hubConnection.SendAsync("RemoveSkillSlot", slot);
+
+        // 클라이언트 쿨타임 표시도 같이 제거
+        if (skillCooldownEnds.ContainsKey(slot))
+            skillCooldownEnds.Remove(slot);
     }
 
     private List<InventoryItem> GetFilteredInventory()

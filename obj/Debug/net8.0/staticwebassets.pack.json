@@ -45,6 +45,46 @@
       "PackagePath": "staticwebassets\\images\\npc\\shopkeeper.png"
     },
     {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\archer_01.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\archer_01.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\archer_02.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\archer_02.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\beginner_01.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\beginner_01.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\beginner_02.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\beginner_02.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\mage_01.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\mage_01.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\mage_02.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\mage_02.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\thief_01.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\thief_01.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\thief_02.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\thief_02.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\warrior_01.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\warrior_01.svg"
+    },
+    {
+      "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\customize\\warrior_02.svg",
+      "PackagePath": "staticwebassets\\images\\player\\customize\\warrior_02.svg"
+    },
+    {
       "Id": "C:\\Users\\LEEJAEMIN\\Desktop\\개발관련\\BlazorApp\\wwwroot\\images\\player\\down.png",
       "PackagePath": "staticwebassets\\images\\player\\down.png"
     },

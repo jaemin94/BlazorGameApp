@@ -183,6 +183,31 @@ public class GameHub : Hub
         await SendRoomState(player.RoomCode);
     }
 
+    // ===============================
+    // 퀵슬롯 해제
+    // 스킬창에서 X 버튼을 누르면 해당 슬롯을 비움
+    // ===============================
+    public async Task RemoveSkillSlot(int slot)
+    {
+        if (!Players.TryGetValue(Context.ConnectionId, out var player)) return;
+        if (slot < 1 || slot > 9) return;
+
+        var targetSlot = player.SkillSlots.FirstOrDefault(s => s.Slot == slot);
+
+        // 슬롯 객체가 없으면 새로 만들어 빈 슬롯으로 유지
+        if (targetSlot == null)
+        {
+            targetSlot = new SkillSlot { Slot = slot, SkillId = "" };
+            player.SkillSlots.Add(targetSlot);
+        }
+        else
+        {
+            targetSlot.SkillId = "";
+        }
+
+        await SendRoomState(player.RoomCode);
+    }
+
     // 슬롯 번호로 스킬 사용
     public async Task UseSkillFromSlot(int slot)
     {
@@ -232,6 +257,7 @@ public class GameHub : Hub
     // 캐릭터 외형 변경
     // 얼굴 이모지는 사용하지 않고 CSS 픽셀 얼굴로 렌더링합니다.
     public async Task UpdateCharacterAppearance(
+        string avatarPreset,
         string skinColor,
         string hairColor,
         string outfitColor,
@@ -241,6 +267,7 @@ public class GameHub : Hub
     {
         if (!Players.TryGetValue(Context.ConnectionId, out var player)) return;
 
+        var allowedAvatar = new[] { "beginner_01", "beginner_02", "warrior_01", "warrior_02", "mage_01", "mage_02", "thief_01", "thief_02", "archer_01", "archer_02" };
         var allowedSkin = new[] { "#f2c7a5", "#d8a47f", "#8d5524", "#ffe0bd", "#b7795f" };
         var allowedHair = new[] { "#2b1b12", "#7c2d12", "#facc15", "#111827", "#f8fafc", "#78350f", "#991b1b" };
         var allowedOutfit = new[] { "#2563eb", "#16a34a", "#dc2626", "#7c3aed", "#f97316", "#0f172a", "#92400e", "#0891b2" };
@@ -248,6 +275,7 @@ public class GameHub : Hub
         var allowedOutfitStyle = new[] { "adventurer", "armor", "robe", "leather", "ranger" };
         var allowedAccessory = new[] { "none", "cape", "pauldron", "hood", "scarf" };
 
+        if (allowedAvatar.Contains(avatarPreset)) player.AvatarPreset = avatarPreset;
         if (allowedSkin.Contains(skinColor)) player.SkinColor = skinColor;
         if (allowedHair.Contains(hairColor)) player.HairColor = hairColor;
         if (allowedOutfit.Contains(outfitColor)) player.OutfitColor = outfitColor;

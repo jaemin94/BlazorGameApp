@@ -1711,3 +1711,554 @@ html, body {
     width: 9px;
     height: 2px;
 }
+
+
+/* =========================================================
+   퀵슬롯 해제 UI
+   - 스킬창 아래 현재 퀵슬롯 목록 표시
+   - 해제 버튼으로 잘못 등록한 스킬을 비울 수 있음
+   ========================================================= */
+.assigned-slot-panel {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(250, 204, 21, 0.25);
+}
+
+.assigned-slot-panel h5 {
+    margin: 0 0 8px;
+    color: #facc15;
+    font-size: 14px;
+}
+
+.assigned-slot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    margin-bottom: 6px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.055);
+}
+
+.assigned-slot-row.empty {
+    opacity: 0.65;
+}
+
+.assigned-slot-row.filled {
+    border-color: rgba(250, 204, 21, 0.35);
+    background: rgba(250, 204, 21, 0.08);
+}
+
+.assigned-slot-row div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.assigned-slot-row strong {
+    color: #f8fafc;
+    font-size: 12px;
+}
+
+.assigned-slot-row span {
+    color: #cbd5e1;
+    font-size: 12px;
+}
+
+.slot-remove-btn {
+    flex: 0 0 auto;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 9px;
+    background: linear-gradient(180deg, #ef4444, #991b1b);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.slot-remove-btn:hover {
+    filter: brightness(1.12);
+}
+
+.slot-buttons .assigned-slot-btn {
+    background: linear-gradient(180deg, #facc15, #b45309) !important;
+    color: #1f1300 !important;
+    border-color: rgba(250, 204, 21, 0.8) !important;
+}
+
+/* =========================================================
+   CUSTOMIZE WINDOW FINAL FIX
+   - 기존 premium/customize/grid 스타일을 모두 덮어씀
+   - 창 크기 축소
+   - 창 자체는 화면 안에 고정
+   - 내용만 세로 스크롤
+   - 미리보기 캐릭터 크기 축소
+   ========================================================= */
+
+.customize-window,
+.rpg-window.customize-window,
+.premium-customize-window,
+.compact-customize-window {
+    position: absolute !important;
+    right: 16px !important;
+    top: 72px !important;
+    left: auto !important;
+    bottom: auto !important;
+
+    width: 320px !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 32px) !important;
+
+    height: auto !important;
+    max-height: calc(100vh - 100px) !important;
+
+    padding: 10px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    z-index: 9999 !important;
+}
+
+.compact-window-title,
+.customize-window .window-title {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    margin: 0 0 8px 0 !important;
+    padding: 0 2px 7px 2px !important;
+}
+
+.compact-window-title h4,
+.customize-window .window-title h4 {
+    margin: 0 !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+}
+
+.customize-scroll-area {
+    display: block !important;
+    max-height: calc(100vh - 205px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 6px !important;
+}
+
+.customize-scroll-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.customize-scroll-area::-webkit-scrollbar-track {
+    background: rgba(0,0,0,.35);
+    border-radius: 999px;
+}
+
+.customize-scroll-area::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #facc15, #92400e);
+    border-radius: 999px;
+}
+
+/* 기존 grid 레이아웃 무효화 */
+.customize-grid-layout,
+.customize-window .scroll-body {
+    display: block !important;
+    grid-template-columns: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-right: 0 !important;
+}
+
+.compact-preview,
+.premium-preview,
+.custom-preview {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 0 8px 0 !important;
+    padding: 8px !important;
+    border-radius: 12px !important;
+    background:
+        radial-gradient(circle at center 30%, rgba(250,204,21,.14), transparent 42%),
+        rgba(15, 23, 42, .75) !important;
+    border: 1px solid rgba(250,204,21,.28) !important;
+}
+
+.compact-preview-stage,
+.preview-stage {
+    min-height: 105px !important;
+    height: 105px !important;
+    border-radius: 12px !important;
+    display: grid !important;
+    place-items: center !important;
+    overflow: hidden !important;
+}
+
+.compact-avatar,
+.customize-window .big-avatar {
+    transform: scale(.9) !important;
+    transform-origin: center center !important;
+}
+
+.compact-preview-info,
+.preview-info {
+    margin-top: 6px !important;
+    gap: 2px !important;
+    text-align: center !important;
+}
+
+.compact-preview-info strong,
+.preview-info strong {
+    font-size: 13px !important;
+}
+
+.compact-preview-info span,
+.preview-info span {
+    font-size: 11px !important;
+}
+
+.compact-preview-info small,
+.preview-info small {
+    display: none !important;
+}
+
+.compact-section,
+.custom-section {
+    margin: 0 0 7px 0 !important;
+    padding: 7px !important;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,.055) !important;
+    border: 1px solid rgba(255,255,255,.08) !important;
+}
+
+.compact-section strong,
+.custom-section strong {
+    display: block !important;
+    margin-bottom: 5px !important;
+    font-size: 12px !important;
+    color: #facc15 !important;
+}
+
+.compact-preset-grid,
+.preset-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+}
+
+.compact-preset-grid button,
+.preset-grid button,
+.compact-choice-grid button,
+.compact-choice button {
+    min-width: 0 !important;
+    width: auto !important;
+    padding: 6px 5px !important;
+    font-size: 11px !important;
+    line-height: 1.1 !important;
+    border-radius: 8px !important;
+}
+
+.compact-color-buttons,
+.color-buttons {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    margin-top: 4px !important;
+}
+
+.color-dot {
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    border-radius: 7px !important;
+    border: 2px solid rgba(255,255,255,.28) !important;
+    cursor: pointer !important;
+}
+
+.color-dot.selected {
+    outline: 2px solid #facc15 !important;
+    outline-offset: 2px !important;
+}
+
+.compact-choice-grid,
+.compact-choice,
+.choice-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+}
+
+.compact-choice button.active,
+.choice-buttons button.active {
+    color: #facc15 !important;
+    border-color: #facc15 !important;
+    box-shadow: 0 0 8px rgba(250,204,21,.25) !important;
+}
+
+.customize-footer {
+    display: grid !important;
+    grid-template-columns: 1fr 72px !important;
+    gap: 7px !important;
+    padding-top: 8px !important;
+    margin-top: 8px !important;
+    border-top: 1px solid rgba(255,255,255,.1) !important;
+}
+
+.save-custom-button,
+.cancel-custom-button {
+    height: 34px !important;
+    border: none !important;
+    border-radius: 9px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+}
+
+.save-custom-button {
+    background: linear-gradient(180deg, #facc15, #b45309) !important;
+    color: #1f1300 !important;
+}
+
+.cancel-custom-button {
+    background: rgba(71,85,105,.9) !important;
+    color: #f8fafc !important;
+}
+
+/* 작은 화면에서는 중앙 팝업 */
+@media (max-width: 760px) {
+    .customize-window,
+    .rpg-window.customize-window,
+    .premium-customize-window,
+    .compact-customize-window {
+        left: 50% !important;
+        right: auto !important;
+        top: 56px !important;
+        transform: translateX(-50%) !important;
+        width: calc(100vw - 24px) !important;
+        max-height: calc(100vh - 72px) !important;
+    }
+
+    .customize-scroll-area {
+        max-height: calc(100vh - 190px) !important;
+    }
+}
+
+/* =========================================================
+   REAL SPRITE CUSTOMIZE FIX
+   - 기존 블록형 CSS 캐릭터 대신 SVG 스프라이트 이미지 사용
+   - 캐릭터가 블록처럼 보이는 문제 개선
+   ========================================================= */
+
+.avatar-sprite {
+    display: block;
+    object-fit: contain;
+    image-rendering: auto;
+    user-select: none;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.45));
+}
+
+.player-avatar-sprite {
+    width: 58px;
+    height: 70px;
+    margin: 0 auto;
+}
+
+.hud-avatar-sprite {
+    width: 54px;
+    height: 64px;
+    margin: 0 auto;
+}
+
+.hud-portrait {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 64px;
+    border-radius: 14px;
+    background: radial-gradient(circle at center, rgba(250,204,21,0.18), rgba(15,23,42,0.55));
+    border: 1px solid rgba(250,204,21,0.25);
+    overflow: hidden;
+}
+
+/* 커스터마이징 창 전체 */
+.sprite-customize-window,
+.rpg-window.sprite-customize-window {
+    position: absolute !important;
+    right: 18px !important;
+    top: 76px !important;
+    width: 380px !important;
+    max-width: calc(100vw - 36px) !important;
+    height: auto !important;
+    max-height: calc(100vh - 110px) !important;
+    overflow: hidden !important;
+    z-index: 1000 !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+}
+
+.sprite-customize-body {
+    max-height: calc(100vh - 230px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+}
+
+.sprite-customize-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sprite-customize-body::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.25);
+    border-radius: 999px;
+}
+
+.sprite-customize-body::-webkit-scrollbar-thumb {
+    background: rgba(250,204,21,0.55);
+    border-radius: 999px;
+}
+
+.sprite-preview-panel {
+    border: 1px solid rgba(250,204,21,0.35);
+    border-radius: 14px;
+    background:
+        radial-gradient(circle at center, rgba(250,204,21,0.18), transparent 58%),
+        linear-gradient(180deg, rgba(30,41,59,0.9), rgba(15,23,42,0.88));
+    padding: 12px;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.sprite-preview-stage {
+    height: 168px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-avatar-sprite {
+    width: 132px;
+    height: 158px;
+}
+
+.sprite-preview-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    color: #f8fafc;
+}
+
+.sprite-preview-info strong {
+    color: #facc15;
+    font-size: 15px;
+}
+
+.sprite-preview-info span {
+    font-size: 12px;
+    color: rgba(248,250,252,0.72);
+}
+
+.sprite-preset-section {
+    border: 1px solid rgba(255,255,255,0.11);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.045);
+    padding: 10px;
+}
+
+.sprite-preset-section > strong {
+    display: block;
+    color: #facc15;
+    margin-bottom: 3px;
+}
+
+.sprite-preset-section > p {
+    margin: 0 0 10px;
+    color: rgba(248,250,252,0.62);
+    font-size: 12px;
+}
+
+.sprite-preset-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.sprite-preset-card {
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(15,23,42,0.92), rgba(2,6,23,0.9));
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    min-height: 130px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.sprite-preset-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(250,204,21,0.55);
+    box-shadow: 0 0 12px rgba(250,204,21,0.14);
+}
+
+.sprite-preset-card.active {
+    border-color: #facc15;
+    box-shadow: 0 0 0 1px rgba(250,204,21,0.35), 0 0 16px rgba(250,204,21,0.2);
+    background: linear-gradient(180deg, rgba(120,53,15,0.75), rgba(15,23,42,0.92));
+}
+
+.sprite-preset-card img {
+    width: 62px;
+    height: 74px;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 4px rgba(0,0,0,0.45));
+}
+
+.sprite-preset-card span {
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.sprite-preset-card small {
+    font-size: 10px;
+    color: rgba(248,250,252,0.62);
+}
+
+/* 기존 블록형 커스터마이징 UI 숨김 방지용: 새 창 안에서는 사용하지 않음 */
+.sprite-customize-window .custom-avatar,
+.sprite-customize-window .big-avatar,
+.sprite-customize-window .custom-section,
+.sprite-customize-window .color-buttons,
+.sprite-customize-window .choice-buttons {
+    display: none !important;
+}
+
+@media (max-width: 720px) {
+    .sprite-customize-window,
+    .rpg-window.sprite-customize-window {
+        left: 12px !important;
+        right: 12px !important;
+        top: 70px !important;
+        width: auto !important;
+    }
+
+    .sprite-preset-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sprite-preview-stage {
+        height: 140px;
+    }
+
+    .preview-avatar-sprite {
+        width: 110px;
+        height: 132px;
+    }
+}
